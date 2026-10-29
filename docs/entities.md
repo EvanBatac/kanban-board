@@ -6,7 +6,7 @@
 - name
 - email (unique)
 - password_hash
-
+- created_at
 ## Board
 
 - id (PK)
@@ -44,7 +44,7 @@
 - content
 - task_id (FK → Task.id)
 - user_id (FK → User.id)
-
+- created_at
 ## ActivityLog
 
 - id (PK)
