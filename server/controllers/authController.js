@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 
 export const register = async (req, res, next) => {
@@ -115,7 +116,6 @@ export const login = async (req, res, next) => {
       });
     }
     const user = rows[0];
-
     const match = await bcrypt.compare(password, user.password_hash);
 
     if (!match) {
@@ -124,9 +124,21 @@ export const login = async (req, res, next) => {
         message: "Invalid email or password",
       });
     }
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    });
     res.status(200).json({
       success: true,
       message: "User successfully logged in",
+      data: {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      },
     });
   } catch (error) {
     next(error);
