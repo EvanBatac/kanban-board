@@ -84,3 +84,51 @@ export const register = async (req, res, next) => {
     next(error);
   }
 };
+
+export const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body ?? {};
+    if (typeof email !== "string" || typeof password !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password must be strings",
+      });
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT id, name, email, password_hash FROM users WHERE email = ?",
+      [normalizedEmail],
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+    const user = rows[0];
+
+    const match = await bcrypt.compare(password, user.password_hash);
+
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "User successfully logged in",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
