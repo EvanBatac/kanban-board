@@ -1,3 +1,6 @@
+import bcrypt from "bcrypt";
+import pool from "../config/db.js";
+
 export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body ?? {};
@@ -31,7 +34,6 @@ export const register = async (req, res, next) => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(normalizedEmail)) {
       return res.status(400).json({
         success: false,
@@ -52,10 +54,31 @@ export const register = async (req, res, next) => {
         message: "Password must not exceed 72 bytes.",
       });
     }
-    
+
+    const [rows] = await pool.query("SELECT id FROM users WHERE email = ?", [
+      normalizedEmail,
+    ]);
+
+    if (rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already registered",
+      });
+    }
+    const hashed = await bcrypt.hash(password, 10);
+
+    const [result] = await pool.query(
+      "INSERT INTO users (name, email, password_hash) VALUES ( ?, ?, ?)",
+      [normalizedName, normalizedEmail, hashed],
+    );
     res.status(201).json({
       success: true,
       message: "User successfully registered",
+      data: {
+        id: result.insertId,
+        name: normalizedName,
+        email: normalizedEmail,
+      },
     });
   } catch (error) {
     next(error);
