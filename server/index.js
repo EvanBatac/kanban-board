@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import pool from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const port = Number(process.env.PORT);
@@ -17,7 +18,7 @@ app.use(express.json());
 
 app.get("/api/health", async (req, res, next) => {
   try {
-    const [rows] = await pool.query("SELECT 1 AS result");
+    const [rows] = await pool.query("SELECT 1 FROM jksdh");
     res.status(200).json({
       success: true,
       data: rows[0],
@@ -26,6 +27,8 @@ app.get("/api/health", async (req, res, next) => {
     next(error);
   }
 });
+
+app.use("/api/auth", authRoutes);
 
 app.use(errorHandler);
 
