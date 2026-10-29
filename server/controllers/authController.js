@@ -144,3 +144,28 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getMe = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id, name, email FROM users WHERE id = ?",
+      [req.user.id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      data: {
+        user: rows[0],
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
