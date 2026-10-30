@@ -1,5 +1,6 @@
 import express from "express";
 import authenticate from "../middleware/authMiddleware.js";
+import requireBoardMember from "../middleware/requireBoardMember.js";
 import {
   createBoard,
   getBoards,
@@ -9,6 +10,6 @@ const router = express.Router();
 
 router.post("/", authenticate, createBoard);
 router.get("/", authenticate, getBoards);
-router.get("/:id", authenticate, getBoardById);
+router.get("/:id", authenticate, requireBoardMember, getBoardById);
 
 export default router;

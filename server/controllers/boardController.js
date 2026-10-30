@@ -82,23 +82,9 @@ export const getBoards = async (req, res, next) => {
 
 export const getBoardById = async (req, res, next) => {
   try {
-    const id = Number(req.params.id);
-    const validId = Number.isInteger(id) && id > 0;
-
-    if (!validId) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid board ID",
-      });
-    }
-
     const [rows] = await pool.query(
-      `SELECT b.id, b.name, b.created_by, bm.role AS role 
-       FROM boards b
-       INNER JOIN board_members bm 
-        ON b.id = bm.board_id 
-       WHERE bm.user_id = ?  AND b.id = ?`,
-       [req.user.id, id],
+      "SELECT id, name, created_by FROM boards WHERE id = ?",
+      [req.board.id],
     );
 
     if (rows.length === 0) {
@@ -110,7 +96,10 @@ export const getBoardById = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        board: rows[0],
+        board: {
+          ...rows[0],
+          role: req.board.role,
+        },
       },
     });
   } catch (error) {
