@@ -60,7 +60,12 @@ export const createBoard = async (req, res, next) => {
 export const getBoards = async (req, res, next) => {
   try {
     const [rows] = await pool.query(
-      "SELECT b.id, b.name, b.created_by, bm.role AS role FROM boards b INNER JOIN board_members bm ON b.id = bm.board_id WHERE bm.user_id = ? ORDER BY b.id DESC",
+      `SELECT b.id, b.name, b.created_by, bm.role AS role 
+       FROM boards b
+       INNER JOIN board_members bm 
+        ON b.id = bm.board_id 
+       WHERE bm.user_id = ? 
+       ORDER BY b.id DESC`,
       [req.user.id],
     );
 
@@ -68,6 +73,44 @@ export const getBoards = async (req, res, next) => {
       success: true,
       data: {
         boards: rows,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBoardById = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const validId = Number.isInteger(id) && id > 0;
+
+    if (!validId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid board ID",
+      });
+    }
+
+    const [rows] = await pool.query(
+      `SELECT b.id, b.name, b.created_by, bm.role AS role 
+       FROM boards b
+       INNER JOIN board_members bm 
+        ON b.id = bm.board_id 
+       WHERE bm.user_id = ?  AND b.id = ?`,
+       [req.user.id, id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Board not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      data: {
+        board: rows[0],
       },
     });
   } catch (error) {
