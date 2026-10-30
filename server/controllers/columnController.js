@@ -59,3 +59,21 @@ export const createColumn = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getColumns = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id, name, board_id, position FROM board_columns WHERE board_id = ? ORDER BY position ASC",
+      [req.board.id],
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        columns: rows,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
