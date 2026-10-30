@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import pool from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import boardRoutes from "./routes/boardRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const port = Number(process.env.PORT);
@@ -29,7 +30,7 @@ app.get("/api/health", async (req, res, next) => {
 });
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/boards", boardRoutes);
 app.use(errorHandler);
 
 app.listen(port, () => {
