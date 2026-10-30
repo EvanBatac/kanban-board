@@ -56,3 +56,21 @@ export const createBoard = async (req, res, next) => {
     if (connection) connection.release();
   }
 };
+
+export const getBoards = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT b.id, b.name, b.created_by, bm.role AS role FROM boards b INNER JOIN board_members bm ON b.id = bm.board_id WHERE bm.user_id = ? ORDER BY b.id DESC",
+      [req.user.id],
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        boards: rows,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
