@@ -106,3 +106,5 @@ export const getBoardById = async (req, res, next) => {
     next(error);
   }
 };
+
+
