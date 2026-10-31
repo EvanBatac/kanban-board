@@ -71,7 +71,7 @@ export const createTask = async (req, res, next) => {
       });
     }
     const taskDueDate = due_date ?? null;
-    
+
     const taskAssignedTo = assigned_to ?? null;
     if (
       taskAssignedTo !== null &&
@@ -129,6 +129,37 @@ export const createTask = async (req, res, next) => {
           position,
           assigned_to: taskAssignedTo,
         },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBoardTasks = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT t.id, 
+              t.title, 
+              t.description, 
+              t.due_date, 
+              t.column_id, 
+              t.position, 
+              t.assigned_to, 
+              u.name AS assignee_name 
+      FROM tasks t 
+      INNER JOIN board_columns bc 
+        ON t.column_id = bc.id 
+      LEFT JOIN users u 
+        ON t.assigned_to = u.id 
+      WHERE bc.board_id = ? 
+      ORDER BY bc.position ASC, t.position ASC`,
+      [req.board.id],
+    );
+    return res.status(200).json({
+      success: true,
+      data: {
+        tasks: rows,
       },
     });
   } catch (error) {
