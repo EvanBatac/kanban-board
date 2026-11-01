@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { logActivity } from "../utils/logActivity.js";
 
 export const createComment = async (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ export const createComment = async (req, res, next) => {
     }
 
     const [taskRows] = await pool.query(
-      `SELECT t.id
+      `SELECT t.id, t.title
        FROM tasks t
        INNER JOIN board_columns bc ON t.column_id = bc.id
        WHERE t.id = ? AND bc.board_id = ?`,
@@ -66,6 +67,17 @@ export const createComment = async (req, res, next) => {
       [result.insertId],
     );
 
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        taskId,
+        action: "commented",
+        details: `Commented on task "${taskRows[0].title}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log comment activity:", error);
+    }
     return res.status(201).json({
       success: true,
       message: "Comment created successfully",

@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { logActivity } from "../utils/logActivity.js";
 export const createTask = async (req, res, next) => {
   try {
     const columnId = Number(req.params.columnId);
@@ -115,6 +116,18 @@ export const createTask = async (req, res, next) => {
         taskAssignedTo,
       ],
     );
+
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        taskId: result.insertId,
+        action: "created",
+        details: `Created task "${trimmedTitle}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log task activity:", error);
+    }
 
     return res.status(201).json({
       success: true,
@@ -285,8 +298,8 @@ export const updateTask = async (req, res, next) => {
     if (taskAssignedTo !== undefined && taskAssignedTo !== null) {
       const [memberRows] = await pool.query(
         `SELECT user_id
-     FROM board_members
-     WHERE user_id = ? AND board_id = ?`,
+         FROM board_members
+         WHERE user_id = ? AND board_id = ?`,
         [taskAssignedTo, req.board.id],
       );
 
@@ -347,6 +360,41 @@ export const updateTask = async (req, res, next) => {
        WHERE t.id = ? AND bc.board_id = ?`,
       [taskId, req.board.id],
     );
+
+    const [taskRows] = await pool.query(
+      `SELECT t.id, t.title
+       FROM tasks t
+       INNER JOIN board_columns bc 
+        ON t.column_id = bc.id
+       WHERE bc.board_id = ? AND t.id = ?`,
+      [req.board.id, taskId],
+    );
+
+    if (taskRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    const activityTitle =
+      title !== undefined ? trimmedTitle : taskRows[0].title;
+    const activityAction =
+      assigned_to !== undefined ? "assigned" : "updated";
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        taskId: taskId,
+        action: activityAction,
+        details:
+          activityAction === "assigned"
+            ? `Assigned task "${activityTitle}"`
+            : `Updated task "${activityTitle}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log update activity", error);
+    }
     return res.status(200).json({
       success: true,
       message: "Task updated successfully",
@@ -378,6 +426,21 @@ export const deleteTask = async (req, res, next) => {
       });
     }
 
+    const [taskRows] = await pool.query(
+      `SELECT t.title
+       FROM tasks t
+       INNER JOIN board_columns bc ON t.column_id = bc.id
+       WHERE t.id = ? AND bc.board_id = ?`,
+      [taskId, req.board.id],
+    );
+
+    if (taskRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
     const [result] = await pool.query(
       `DELETE t
        FROM tasks t
@@ -393,6 +456,18 @@ export const deleteTask = async (req, res, next) => {
       });
     }
 
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        taskId: null,
+        action: "deleted",
+        details: `Deleted task "${taskRows[0].title}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log delete activity:", error);
+    }
+
     return res.status(200).json({
       success: true,
       message: "Task deleted successfully",
@@ -403,6 +478,8 @@ export const deleteTask = async (req, res, next) => {
 };
 
 export const moveTask = async (req, res, next) => {
+  let connection;
+
   try {
     const taskId = Number(req.params.taskId);
     const { column_id, position } = req.body ?? {};
@@ -417,12 +494,14 @@ export const moveTask = async (req, res, next) => {
         message: "Invalid task ID",
       });
     }
+
     if (!validColumnId) {
       return res.status(400).json({
         success: false,
         message: "Invalid column ID",
       });
     }
+
     if (!validPosition) {
       return res.status(400).json({
         success: false,
@@ -431,11 +510,10 @@ export const moveTask = async (req, res, next) => {
     }
 
     const [taskRows] = await pool.query(
-      `SELECT t.id, t.column_id, t.position
+      `SELECT t.id, t.title, t.column_id, t.position
        FROM tasks t
-       INNER JOIN board_columns bc
-        ON t.column_id = bc.id
-      WHERE t.id = ? AND bc.board_id = ?`,
+       INNER JOIN board_columns bc ON t.column_id = bc.id
+       WHERE t.id = ? AND bc.board_id = ?`,
       [taskId, req.board.id],
     );
 
@@ -447,7 +525,7 @@ export const moveTask = async (req, res, next) => {
     }
 
     const [columnRows] = await pool.query(
-      "SELECT id FROM board_columns WHERE id = ? AND board_id = ?",
+      "SELECT id, name FROM board_columns WHERE id = ? AND board_id = ?",
       [column_id, req.board.id],
     );
 
@@ -459,14 +537,16 @@ export const moveTask = async (req, res, next) => {
     }
 
     const [countRows] = await pool.query(
-      "SELECT COUNT(*) AS task_count FROM tasks WHERE column_id = ? AND id != ?",
+      `SELECT COUNT(*) AS task_count
+       FROM tasks
+       WHERE column_id = ? AND id != ?`,
       [column_id, taskId],
     );
 
     const taskCount = Number(countRows[0].task_count);
     const newPosition = Math.min(position, taskCount);
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
 
     await connection.beginTransaction();
 
@@ -492,22 +572,29 @@ export const moveTask = async (req, res, next) => {
     );
 
     const [updatedRows] = await connection.query(
-      `SELECT t.id, 
-              t.title, 
-              t.description, 
-              t.due_date, t.column_id,
-              t.position, 
-              t.assigned_to, 
+      `SELECT t.id, t.title, t.description, t.due_date,
+              t.column_id, t.position, t.assigned_to,
               u.name AS assignee_name
        FROM tasks t
-       INNER JOIN board_columns bc 
-        ON t.column_id = bc.id
-       LEFT JOIN users u 
-        ON t.assigned_to = u.id
+       INNER JOIN board_columns bc ON t.column_id = bc.id
+       LEFT JOIN users u ON t.assigned_to = u.id
        WHERE t.id = ? AND bc.board_id = ?`,
       [taskId, req.board.id],
     );
+
     await connection.commit();
+
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        taskId,
+        action: "moved",
+        details: `Moved task "${taskRows[0].title}" to column "${columnRows[0].name}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log move activity:", error);
+    }
 
     return res.status(200).json({
       success: true,
@@ -516,9 +603,13 @@ export const moveTask = async (req, res, next) => {
       },
     });
   } catch (error) {
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     next(error);
   } finally {
-    connection.release();
+    if (connection) {
+      connection.release();
+    }
   }
 };

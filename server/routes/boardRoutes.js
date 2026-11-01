@@ -12,12 +12,19 @@ import {
   deleteTask,
   moveTask,
 } from "../controllers/taskController.js";
+import { getActivity } from "../controllers/activityController.js";
 const router = express.Router();
 
 router.post("/", authenticate, createBoard);
 router.get("/", authenticate, getBoards);
 router.get("/:id", authenticate, requireBoardMember, getBoardById);
 router.get("/:id/tasks", authenticate, requireBoardMember, getBoardTasks);
+router.get(
+  "/:id/activity",
+  authenticate,
+  requireBoardMember,
+  getActivity,
+);
 router.patch(
   "/:id/tasks/:taskId",
   authenticate,

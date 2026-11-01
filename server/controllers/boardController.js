@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { logActivity } from "../utils/logActivity.js";
 
 export const createBoard = async (req, res, next) => {
   const { name } = req.body ?? {};
@@ -38,6 +39,17 @@ export const createBoard = async (req, res, next) => {
     );
 
     await connection.commit();
+
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: boardsResult.insertId,
+        action: "created",
+        details: `Created board "${trimmedName}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log board activity:", error);
+    }
 
     return res.status(201).json({
       success: true,
@@ -106,5 +118,3 @@ export const getBoardById = async (req, res, next) => {
     next(error);
   }
 };
-
-

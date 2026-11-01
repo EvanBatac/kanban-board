@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { logActivity } from "../utils/logActivity.js";
 
 export const createColumn = async (req, res, next) => {
   try {
@@ -44,6 +45,16 @@ export const createColumn = async (req, res, next) => {
       [trimmedName, req.board.id, position],
     );
 
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        action: "created",
+        details: `Created column "${trimmedName}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log board column activity:", error);
+    }
     return res.status(201).json({
       success: true,
       data: {
