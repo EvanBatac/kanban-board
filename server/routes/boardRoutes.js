@@ -6,7 +6,7 @@ import {
   getBoards,
   getBoardById,
 } from "../controllers/boardController.js";
-import { getBoardTasks, updateTask } from "../controllers/taskController.js";
+import { getBoardTasks, updateTask, deleteTask } from "../controllers/taskController.js";
 const router = express.Router();
 
 router.post("/", authenticate, createBoard);
@@ -19,4 +19,5 @@ router.patch(
   requireBoardMember,
   updateTask,
 );
+router.delete("/:id/tasks/:taskId", authenticate, requireBoardMember, deleteTask);
 export default router;

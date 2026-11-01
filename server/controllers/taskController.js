@@ -358,3 +358,46 @@ export const updateTask = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteTask = async (req, res, next) => {
+  try {
+    if (req.board.role !== "owner" && req.board.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to delete tasks",
+      });
+    }
+
+    const taskId = Number(req.params.taskId);
+    const validTaskId = Number.isInteger(taskId) && taskId > 0;
+
+    if (!validTaskId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid task ID",
+      });
+    }
+
+    const [result] = await pool.query(
+      `DELETE t
+       FROM tasks t
+       INNER JOIN board_columns bc ON t.column_id = bc.id
+       WHERE t.id = ? AND bc.board_id = ?`,
+      [taskId, req.board.id],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Task deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
