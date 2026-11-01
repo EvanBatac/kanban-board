@@ -401,3 +401,124 @@ export const deleteTask = async (req, res, next) => {
     next(error);
   }
 };
+
+export const moveTask = async (req, res, next) => {
+  try {
+    const taskId = Number(req.params.taskId);
+    const { column_id, position } = req.body ?? {};
+
+    const validTaskId = Number.isInteger(taskId) && taskId > 0;
+    const validColumnId = Number.isInteger(column_id) && column_id > 0;
+    const validPosition = Number.isInteger(position) && position >= 0;
+
+    if (!validTaskId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid task ID",
+      });
+    }
+    if (!validColumnId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid column ID",
+      });
+    }
+    if (!validPosition) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid position",
+      });
+    }
+
+    const [taskRows] = await pool.query(
+      `SELECT t.id, t.column_id, t.position
+       FROM tasks t
+       INNER JOIN board_columns bc
+        ON t.column_id = bc.id
+      WHERE t.id = ? AND bc.board_id = ?`,
+      [taskId, req.board.id],
+    );
+
+    if (taskRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    const [columnRows] = await pool.query(
+      "SELECT id FROM board_columns WHERE id = ? AND board_id = ?",
+      [column_id, req.board.id],
+    );
+
+    if (columnRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Column not found",
+      });
+    }
+
+    const [countRows] = await pool.query(
+      "SELECT COUNT(*) AS task_count FROM tasks WHERE column_id = ? AND id != ?",
+      [column_id, taskId],
+    );
+
+    const taskCount = Number(countRows[0].task_count);
+    const newPosition = Math.min(position, taskCount);
+
+    const connection = await pool.getConnection();
+
+    await connection.beginTransaction();
+
+    await connection.query(
+      `UPDATE tasks
+       SET position = position - 1
+       WHERE column_id = ? AND position > ?`,
+      [taskRows[0].column_id, taskRows[0].position],
+    );
+
+    await connection.query(
+      `UPDATE tasks
+       SET position = position + 1
+       WHERE column_id = ? AND position >= ?`,
+      [column_id, newPosition],
+    );
+
+    await connection.query(
+      `UPDATE tasks
+       SET column_id = ?, position = ?
+       WHERE id = ?`,
+      [column_id, newPosition, taskId],
+    );
+
+    const [updatedRows] = await connection.query(
+      `SELECT t.id, 
+              t.title, 
+              t.description, 
+              t.due_date, t.column_id,
+              t.position, 
+              t.assigned_to, 
+              u.name AS assignee_name
+       FROM tasks t
+       INNER JOIN board_columns bc 
+        ON t.column_id = bc.id
+       LEFT JOIN users u 
+        ON t.assigned_to = u.id
+       WHERE t.id = ? AND bc.board_id = ?`,
+      [taskId, req.board.id],
+    );
+    await connection.commit();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        task: updatedRows[0],
+      },
+    });
+  } catch (error) {
+    await connection.rollback();
+    next(error);
+  } finally {
+    connection.release();
+  }
+};
