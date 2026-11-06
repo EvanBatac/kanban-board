@@ -10,6 +10,7 @@ export default function Register() {
     confirmPassword: "",
   });
   const { name, email, password, confirmPassword } = formData;
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -27,6 +28,7 @@ export default function Register() {
       setError("Passwords do not match");
       return;
     }
+    setIsLoading(true);
     try {
       await api.post("/auth/register", {
         name,
@@ -37,6 +39,8 @@ export default function Register() {
       navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setIsLoading(false);
     }
   }
   return (
@@ -79,10 +83,13 @@ export default function Register() {
           value={confirmPassword}
           onChange={handleChange}
           type="password"
+          required
           placeholder="Confirm your password..."
         />
         {error && <p>{error}</p>}
-        <button type="submit">Register</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Registering" : "Register"}
+        </button>
       </form>
     </>
   );
