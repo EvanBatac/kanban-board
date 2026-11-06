@@ -1,4 +1,6 @@
 import { useState } from "react";
+import api from "../api/client";
+
 export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
@@ -6,8 +8,8 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
-
   const { name, email, password, confirmPassword } = formData;
+  const [error, setError] = useState("");
 
   function handleChange(e) {
     setFormData({
@@ -16,9 +18,25 @@ export default function Register() {
     });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log(formData);
+    setError("");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    try {
+      const res = await api.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      const data = res.data;
+      console.log(data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong");
+    }
   }
   return (
     <>
@@ -62,6 +80,7 @@ export default function Register() {
           type="password"
           placeholder="Confirm your password..."
         />
+        {error && <p>{error}</p>}
         <button type="submit">Register</button>
       </form>
     </>
