@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../api/client";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ export default function Register() {
   });
   const { name, email, password, confirmPassword } = formData;
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   function handleChange(e) {
     setFormData({
@@ -26,14 +28,13 @@ export default function Register() {
       return;
     }
     try {
-      const res = await api.post("/auth/register", {
+      await api.post("/auth/register", {
         name,
         email,
         password,
       });
 
-      const data = res.data;
-      console.log(data);
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     }
