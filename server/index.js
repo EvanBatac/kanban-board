@@ -7,6 +7,7 @@ import boardRoutes from "./routes/boardRoutes.js";
 import columnRoutes from "./routes/columnRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
+import boardMemberRoutes from "./routes/boardMemberRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const port = Number(process.env.PORT);
@@ -34,6 +35,7 @@ app.get("/api/health", async (req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/boards", boardRoutes);
+app.use("/api/boards/:id/members", boardMemberRoutes);
 app.use("/api/boards/:id/columns", columnRoutes);
 app.use("/api/boards/:id/columns/:columnId/tasks", taskRoutes);
 app.use("/api/boards/:id/tasks/:taskId/comments", commentRoutes);
