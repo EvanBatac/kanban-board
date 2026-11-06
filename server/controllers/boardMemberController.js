@@ -110,3 +110,29 @@ export const addBoardMember = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getBoardMembers = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT bm.user_id, 
+              u.name, 
+              u.email,
+              bm.role
+       FROM board_members bm
+       INNER JOIN users u
+         ON bm.user_id = u.id
+       WHERE bm.board_id = ?
+       ORDER BY FIELD(bm.role, 'owner', 'admin', 'member'), u.name ASC`,
+      [req.board.id],
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        members: rows,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
