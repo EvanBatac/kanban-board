@@ -27,7 +27,11 @@ export default function Boards() {
     setError("");
     try {
       const res = await api.post("/boards", { name });
-      console.log(res.data);
+
+      const newBoard = res.data?.data?.board;
+
+      setBoards((prev) => [...prev, newBoard]);
+      setName("");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     }
