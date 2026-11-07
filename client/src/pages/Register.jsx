@@ -10,6 +10,7 @@ export default function Register() {
     confirmPassword: "",
   });
   const { name, email, password, confirmPassword } = formData;
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -132,7 +133,7 @@ export default function Register() {
                 id="password"
                 name="password"
                 value={password}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 onChange={handleChange}
                 className="h-11.5 w-full rounded-[9px] border border-[#dfe6e1] bg-[#fbfcfb] px-3.25 text-[13px] text-[#1d2a22] outline-none transition-[border-color,box-shadow,background] duration-180 placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
@@ -151,7 +152,7 @@ export default function Register() {
                 id="confirmPassword"
                 name="confirmPassword"
                 value={confirmPassword}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 onChange={handleChange}
                 className="h-11.5 w-full rounded-[9px] border border-[#dfe6e1] bg-[#fbfcfb] px-3.25 text-[13px] text-[#1d2a22] outline-none transition-[border-color,box-shadow,background] duration-180 placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
@@ -159,6 +160,21 @@ export default function Register() {
                 placeholder="Repeat password"
               />
             </div>
+          </div>
+          <div className="-mt-1 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showPassword"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+              className="h-4 w-4 cursor-pointer rounded border-[#dfe6e1] accent-[#287449]"
+            />
+            <label
+              htmlFor="showPassword"
+              className="cursor-pointer text-xs font-medium text-[#35433a] select-none"
+            >
+              Show password
+            </label>
           </div>
           {error && (
             <p className="-mt-1 text-xs text-[#b33b3b]" role="alert">

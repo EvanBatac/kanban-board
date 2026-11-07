@@ -7,6 +7,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { email, password } = formData;
@@ -103,7 +104,7 @@ export default function Login() {
               Password
             </label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               id="password"
               value={password}
@@ -113,6 +114,21 @@ export default function Login() {
               placeholder="Enter your password"
               onChange={handleChange}
             />
+          </div>
+          <div className="-mt-1 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showPassword"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+              className="h-4 w-4 cursor-pointer rounded border-[#dfe6e1] accent-[#287449]"
+            />
+            <label
+              htmlFor="showPassword"
+              className="cursor-pointer text-xs font-medium text-[#35433a] select-none"
+            >
+              Show password
+            </label>
           </div>
           {error && (
             <p className="-mt-1 text-xs text-[#b33b3b]" role="alert">
