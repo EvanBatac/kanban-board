@@ -3,6 +3,7 @@ import api from "../api/client";
 
 export default function Boards() {
   const [boards, setBoards] = useState([]);
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -21,27 +22,48 @@ export default function Boards() {
     showBoards();
   }, []);
 
+  async function handleCreate(e) {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await api.post("/boards", { name });
+      console.log(res.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong");
+    }
+  }
   return (
-    <div>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : (
-        <>
-          <h1>Your boards</h1>
+    <>
+      <form onSubmit={handleCreate}>
+        <input
+          type="text"
+          value={name}
+          placeholder="e.g Cooking..."
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button type="submit">Create board</button>
+      </form>
+      <div>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : (
+          <>
+            <h1>Your boards</h1>
 
-          {boards.length === 0 ? (
-            <p>No boards yet.</p>
-          ) : (
-            <ul>
-              {boards.map((board) => (
-                <li key={board.id}>{board.name}</li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
-    </div>
+            {boards.length === 0 ? (
+              <p>No boards yet.</p>
+            ) : (
+              <ul>
+                {boards.map((board) => (
+                  <li key={board.id}>{board.name}</li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }
