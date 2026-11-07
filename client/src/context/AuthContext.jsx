@@ -8,8 +8,14 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  function login({ token, user }) {
+    localStorage.setItem("token", token);
+    setToken(token);
+    setUser(user);
+  }
+
   return (
-    <AuthContext.Provider value={{ token, user, isLoading }}>
+    <AuthContext.Provider value={{ token, user, isLoading, login }}>
       {children}
     </AuthContext.Provider>
   );

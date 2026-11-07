@@ -1,7 +1,9 @@
 import api from "../api/client";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,14 +20,14 @@ export default function Login() {
   }
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("")
+    setError("");
     try {
       setIsLoading(true);
       const res = await api.post("/auth/login", {
         email,
         password,
       });
-      console.log(res.data);
+      login(res.data.data);
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {
