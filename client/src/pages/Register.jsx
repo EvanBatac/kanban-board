@@ -74,7 +74,7 @@ export default function Register() {
           type="password"
           onChange={handleChange}
           required
-          placeholder="Enter your password"
+          placeholder="Enter your password..."
         />
         <label htmlFor="confirmPassword">Confirm Password</label>
         <input
