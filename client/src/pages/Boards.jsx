@@ -4,6 +4,7 @@ import api from "../api/client";
 export default function Boards() {
   const [boards, setBoards] = useState([]);
   const [name, setName] = useState("");
+  const [createError, setCreateError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -24,7 +25,7 @@ export default function Boards() {
 
   async function handleCreate(e) {
     e.preventDefault();
-    setError("");
+    setCreateError("");
     try {
       const res = await api.post("/boards", { name });
 
@@ -33,7 +34,7 @@ export default function Boards() {
       setBoards((prev) => [...prev, newBoard]);
       setName("");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setCreateError(err.response?.data?.message || "Something went wrong");
     }
   }
   return (
@@ -47,6 +48,7 @@ export default function Boards() {
         />
         <button type="submit">Create board</button>
       </form>
+      {createError && <p>{createError}</p>}
       <div>
         {isLoading ? (
           <p>Loading...</p>
