@@ -1,8 +1,10 @@
 import api from "../api/client";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -28,6 +30,7 @@ export default function Login() {
         password,
       });
       login(res.data.data);
+      navigate("/boards");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {
