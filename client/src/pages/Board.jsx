@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { DndContext } from "@dnd-kit/core";
 import api from "../api/client";
 import TaskCard from "../components/TaskCard";
 
@@ -97,40 +98,43 @@ export default function Board() {
           {columns.length === 0 ? (
             <p>No columns yet.</p>
           ) : (
-            <div>
-              {columns.map((column) => {
-                const columnTasks = tasks.filter(
-                  (task) => task.column_id === column.id,
-                );
+            <DndContext>
+              <div>
+                {columns.map((column) => {
+                  const columnTasks = tasks.filter(
+                    (task) => task.column_id === column.id,
+                  );
 
-                return (
-                  <div key={column.id}>
-                    <h2>{column.name}</h2>
-                    <form onSubmit={(e) => handleCreateTask(e, column.id)}>
-                      <input
-                        type="text"
-                        value={taskTitle[column.id] || ""}
-                        placeholder="Enter new task..."
-                        onChange={(e) =>
-                          setTaskTitle((prev) => ({
-                            ...prev,
-                            [column.id]: e.target.value,
-                          }))
-                        }
-                      />
-                      <button type="submit">Add Task</button>
-                    </form>
-                    {columnTasks.map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        onDelete={handleDeleteTask}
-                      />
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
+                  return (
+                    <div key={column.id}>
+                      <h2>{column.name}</h2>
+                      <form onSubmit={(e) => handleCreateTask(e, column.id)}>
+                        <input
+                          type="text"
+                          value={taskTitle[column.id] || ""}
+                          placeholder="Enter new task..."
+                          onChange={(e) =>
+                            setTaskTitle((prev) => ({
+                              ...prev,
+                              [column.id]: e.target.value,
+                            }))
+                          }
+                        />
+                        <button type="submit">Add Task</button>
+                      </form>
+
+                      {columnTasks.map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onDelete={handleDeleteTask}
+                        />
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </DndContext>
           )}
         </>
       )}
