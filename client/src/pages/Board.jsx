@@ -1,6 +1,11 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { DndContext } from "@dnd-kit/core";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import api from "../api/client";
 import TaskCard from "../components/TaskCard";
 
@@ -15,6 +20,13 @@ export default function Board() {
   const [taskError, setTaskError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
+
   useEffect(() => {
     async function getBoardById() {
       setIsLoading(true);
@@ -98,7 +110,7 @@ export default function Board() {
           {columns.length === 0 ? (
             <p>No columns yet.</p>
           ) : (
-            <DndContext>
+            <DndContext sensors={sensors}>
               <div>
                 {columns.map((column) => {
                   const columnTasks = tasks.filter(
