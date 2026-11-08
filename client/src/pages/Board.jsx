@@ -8,7 +8,7 @@ export default function Board() {
   const [columns, setColumns] = useState([]);
   const [columnName, setColumnName] = useState("");
   const [columnError, setColumnError] = useState("");
-  const [task, setTask] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -19,10 +19,9 @@ export default function Board() {
         const columnRes = await api.get(`/boards/${id}/columns`);
         const taskRes = await api.get(`/boards/${id}/tasks`);
 
-        console.log(taskRes.data);
-
         setBoard(boardRes.data?.data?.board);
         setColumns(columnRes.data?.data?.columns);
+        setTasks(taskRes.data?.data?.tasks);
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
       } finally {
@@ -51,7 +50,7 @@ export default function Board() {
         <p>{error}</p>
       ) : (
         <>
-          <h1>{board.name}</h1>
+          <h1>{board?.name}</h1>
           <form onSubmit={handleCreateColumn}>
             <input
               type="text"
@@ -66,9 +65,20 @@ export default function Board() {
             <p>No columns yet.</p>
           ) : (
             <div>
-              {columns.map((column) => (
-                <div key={column.id}>{column.name}</div>
-              ))}
+              {columns.map((column) => {
+                const columnTasks = tasks.filter(
+                  (task) => task.column_id === column.id,
+                );
+
+                return (
+                  <div key={column.id}>
+                    <h2>{column.name}</h2>
+                    {columnTasks.map((task) => (
+                      <div key={task.id}>{task.title}</div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           )}
         </>
