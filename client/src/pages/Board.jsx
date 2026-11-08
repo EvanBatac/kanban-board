@@ -15,8 +15,8 @@ export default function Board() {
         const boardRes = await api.get(`/boards/${id}`);
         const columnRes = await api.get(`/boards/${id}/columns`);
 
-        setBoard(boardRes.data.data.board);
-        console.log(columnRes.data);
+        setBoard(boardRes.data?.data?.board);
+        setColumns(columnRes.data?.data?.columns);
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
       } finally {
@@ -33,7 +33,18 @@ export default function Board() {
       ) : error ? (
         <p>{error}</p>
       ) : (
-        <h1>{board.name}</h1>
+        <>
+          <h1>{board.name}</h1>
+          {columns.length === 0 ? (
+            <p>No columns yet.</p>
+          ) : (
+            <div>
+              {columns.map((column) => (
+                <div key={column.id}>{column.name}</div>
+              ))}
+            </div>
+          )}
+        </>
       )}
       <Link to="/boards">Back</Link>
     </div>
