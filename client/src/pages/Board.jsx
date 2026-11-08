@@ -52,7 +52,7 @@ export default function Board() {
       const res = await api.post(`/boards/${id}/columns/${columnId}/tasks`, {
         title: taskTitle,
       });
-      console.log(res.data);
+      setTasks((prev) => [...prev, res.data?.data?.task]);
       setTaskTitle("");
     } catch (err) {
       setTaskError(err.response?.data?.message || "Something went wrong");
