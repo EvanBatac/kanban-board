@@ -8,6 +8,7 @@ export default function Board() {
   const [columns, setColumns] = useState([]);
   const [columnName, setColumnName] = useState("");
   const [columnError, setColumnError] = useState("");
+  const [task, setTask] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -16,6 +17,9 @@ export default function Board() {
       try {
         const boardRes = await api.get(`/boards/${id}`);
         const columnRes = await api.get(`/boards/${id}/columns`);
+        const taskRes = await api.get(`/boards/${id}/tasks`);
+
+        console.log(taskRes.data);
 
         setBoard(boardRes.data?.data?.board);
         setColumns(columnRes.data?.data?.columns);
