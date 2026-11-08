@@ -6,6 +6,8 @@ export default function Board() {
   const { id } = useParams();
   const [board, setBoard] = useState(null);
   const [columns, setColumns] = useState([]);
+  const [columnName, setColumnName] = useState("");
+  const [columnError, setColumnError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -26,6 +28,17 @@ export default function Board() {
     getBoardById();
   }, [id]);
 
+  async function handleCreateColumn(e) {
+    e.preventDefault();
+    setColumnError("");
+    try {
+      const res = await api.post(`/boards/${id}/columns`, { name: columnName });
+      console.log(res.data);
+      setColumnName("");
+    } catch (err) {
+      setColumnError(err.response?.data?.message || "Something went wrong");
+    }
+  }
   return (
     <div>
       {isLoading ? (
@@ -35,6 +48,16 @@ export default function Board() {
       ) : (
         <>
           <h1>{board.name}</h1>
+          <form onSubmit={handleCreateColumn}>
+            <input
+              type="text"
+              value={columnName}
+              placeholder="e.g blahblah"
+              onChange={(e) => setColumnName(e.target.value)}
+            />
+            <button type="submit">Create Column</button>
+          </form>
+          {columnError && <p>{columnError}</p>}
           {columns.length === 0 ? (
             <p>No columns yet.</p>
           ) : (
