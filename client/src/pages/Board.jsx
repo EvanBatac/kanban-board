@@ -9,12 +9,13 @@ export default function Board() {
   const [columnName, setColumnName] = useState("");
   const [columnError, setColumnError] = useState("");
   const [tasks, setTasks] = useState([]);
-  const [taskTitle, setTaskTitle] = useState("");
+  const [taskTitle, setTaskTitle] = useState({});
   const [taskError, setTaskError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     async function getBoardById() {
+      setIsLoading(true);
       setError("");
       try {
         const boardRes = await api.get(`/boards/${id}`);
@@ -50,10 +51,13 @@ export default function Board() {
     setTaskError("");
     try {
       const res = await api.post(`/boards/${id}/columns/${columnId}/tasks`, {
-        title: taskTitle,
+        title: taskTitle[columnId],
       });
       setTasks((prev) => [...prev, res.data?.data?.task]);
-      setTaskTitle("");
+      setTaskTitle((prev) => ({
+        ...prev,
+        [columnId]: "",
+      }));
     } catch (err) {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
@@ -93,9 +97,14 @@ export default function Board() {
                     <form onSubmit={(e) => handleCreateTask(e, column.id)}>
                       <input
                         type="text"
-                        value={taskTitle}
+                        value={taskTitle[column.id] || ""}
                         placeholder="Enter new task..."
-                        onChange={(e) => setTaskTitle(e.target.value)}
+                        onChange={(e) =>
+                          setTaskTitle((prev) => ({
+                            ...prev,
+                            [column.id]: e.target.value,
+                          }))
+                        }
                       />
                       <button type="submit">Add Task</button>
                     </form>
