@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/client";
 
 export default function Boards() {
@@ -63,7 +64,9 @@ export default function Boards() {
             ) : (
               <ul>
                 {boards.map((board) => (
-                  <li key={board.id}>{board.name}</li>
+                  <li key={board.id}>
+                    <Link to={`/boards/${board.id}`}>{board.name}</Link>
+                  </li>
                 ))}
               </ul>
             )}
