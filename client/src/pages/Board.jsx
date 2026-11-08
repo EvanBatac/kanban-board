@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import api from "../api/client";
 import { useEffect, useState } from "react";
+import api from "../api/client";
+import TaskCard from "../components/TaskCard";
 
 export default function Board() {
   const { id } = useParams();
@@ -120,15 +121,11 @@ export default function Board() {
                       <button type="submit">Add Task</button>
                     </form>
                     {columnTasks.map((task) => (
-                      <div key={task.id}>
-                        {task.title}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteTask(task.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onDelete={handleDeleteTask}
+                      />
                     ))}
                   </div>
                 );
