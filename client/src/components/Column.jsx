@@ -1,3 +1,4 @@
+import { useDroppable } from "@dnd-kit/core";
 import TaskCard from "./TaskCard";
 
 export default function Column({
@@ -8,8 +9,13 @@ export default function Column({
   onCreateTask,
   onDeleteTask,
 }) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+
   return (
-    <div>
+    <div
+      ref={setNodeRef}
+      style={{ background: isOver ? "#eaf4ed" : undefined }}
+    >
       <h2>{column.name}</h2>
       <form onSubmit={(e) => onCreateTask(e, column.id)}>
         <input
