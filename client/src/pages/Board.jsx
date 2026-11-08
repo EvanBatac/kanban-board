@@ -33,7 +33,7 @@ export default function Board() {
     setColumnError("");
     try {
       const res = await api.post(`/boards/${id}/columns`, { name: columnName });
-      console.log(res.data);
+      setColumns((prev) => [...prev, res.data?.data?.column]);
       setColumnName("");
     } catch (err) {
       setColumnError(err.response?.data?.message || "Something went wrong");
