@@ -62,6 +62,17 @@ export default function Board() {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
   }
+
+  async function handleDeleteTask(taskId) {
+    setTaskError("");
+    try {
+      await api.delete(`/boards/${id}/tasks/${taskId}`);
+
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    } catch (err) {
+      setTaskError(err.response?.data?.message || "Something went wrong");
+    }
+  }
   return (
     <div>
       {isLoading ? (
@@ -109,7 +120,15 @@ export default function Board() {
                       <button type="submit">Add Task</button>
                     </form>
                     {columnTasks.map((task) => (
-                      <div key={task.id}>{task.title}</div>
+                      <div key={task.id}>
+                        {task.title}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTask(task.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     ))}
                   </div>
                 );
