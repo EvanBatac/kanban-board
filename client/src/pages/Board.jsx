@@ -5,14 +5,18 @@ import { useEffect, useState } from "react";
 export default function Board() {
   const { id } = useParams();
   const [board, setBoard] = useState(null);
+  const [columns, setColumns] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     async function getBoardById() {
       setError("");
       try {
-        const res = await api.get(`/boards/${id}`);
-        setBoard(res.data.data.board);
+        const boardRes = await api.get(`/boards/${id}`);
+        const columnRes = await api.get(`/boards/${id}/columns`);
+
+        setBoard(boardRes.data.data.board);
+        console.log(columnRes.data);
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
       } finally {
