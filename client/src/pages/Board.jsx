@@ -7,7 +7,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import api from "../api/client";
-import TaskCard from "../components/TaskCard";
+import Column from "../components/Column";
 
 export default function Board() {
   const { id } = useParams();
@@ -118,31 +118,20 @@ export default function Board() {
                   );
 
                   return (
-                    <div key={column.id}>
-                      <h2>{column.name}</h2>
-                      <form onSubmit={(e) => handleCreateTask(e, column.id)}>
-                        <input
-                          type="text"
-                          value={taskTitle[column.id] || ""}
-                          placeholder="Enter new task..."
-                          onChange={(e) =>
-                            setTaskTitle((prev) => ({
-                              ...prev,
-                              [column.id]: e.target.value,
-                            }))
-                          }
-                        />
-                        <button type="submit">Add Task</button>
-                      </form>
-
-                      {columnTasks.map((task) => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          onDelete={handleDeleteTask}
-                        />
-                      ))}
-                    </div>
+                    <Column
+                      key={column.id}
+                      column={column}
+                      tasks={columnTasks}
+                      title={taskTitle[column.id] || ""}
+                      onTitleChange={(columnId, value) =>
+                        setTaskTitle((prev) => ({
+                          ...prev,
+                          [columnId]: value,
+                        }))
+                      }
+                      onCreateTask={handleCreateTask}
+                      onDeleteTask={handleDeleteTask}
+                    />
                   );
                 })}
               </div>
