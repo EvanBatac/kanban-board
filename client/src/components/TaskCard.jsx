@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
-export default function TaskCard({ task, onDelete }) {
+export default function TaskCard({ task, onDelete, onOpen }) {
   const {
     attributes,
     listeners,
@@ -31,6 +31,7 @@ export default function TaskCard({ task, onDelete }) {
       style={style}
       {...listeners}
       {...attributes}
+      onClick={() => onOpen(task)}
       className="group flex cursor-grab items-start justify-between gap-3 rounded-xl border border-[#e7ece8] bg-white px-3.5 py-3 shadow-[0_3px_9px_rgba(27,54,40,0.04)] transition-[border-color,box-shadow,transform] hover:border-[#cbd9cf] hover:shadow-[0_7px_15px_rgba(27,54,40,0.07)] active:cursor-grabbing"
     >
       <p className="m-0 min-w-0 flex-1 whitespace-pre-wrap wrap-break-word text-[13px] leading-5 text-[#35433a]">

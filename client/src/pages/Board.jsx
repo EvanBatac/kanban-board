@@ -8,6 +8,7 @@ import {
 } from "@dnd-kit/core";
 import api from "../api/client";
 import Column from "../components/Column";
+import TaskModal from "../components/TaskModal";
 
 export default function Board() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ export default function Board() {
   const [columnName, setColumnName] = useState("");
   const [columnError, setColumnError] = useState("");
   const [tasks, setTasks] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [taskTitle, setTaskTitle] = useState({});
   const [taskError, setTaskError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -245,6 +247,7 @@ export default function Board() {
                         }
                         onCreateTask={handleCreateTask}
                         onDeleteTask={handleDeleteTask}
+                        onOpenTask={setSelectedTask}
                       />
                     );
                   })}
@@ -253,6 +256,12 @@ export default function Board() {
             )}
           </div>
         </>
+      )}
+      {selectedTask && (
+        <TaskModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
       )}
     </main>
   );

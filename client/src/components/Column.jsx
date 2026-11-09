@@ -8,6 +8,7 @@ export default function Column({
   onTitleChange,
   onCreateTask,
   onDeleteTask,
+  onOpenTask,
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${column.id}`,
@@ -56,7 +57,12 @@ export default function Column({
           </p>
         ) : (
           tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onDelete={onDeleteTask} />
+            <TaskCard
+              key={task.id}
+              task={task}
+              onDelete={onDeleteTask}
+              onOpen={onOpenTask}
+            />
           ))
         )}
       </div>
