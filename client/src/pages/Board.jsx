@@ -92,7 +92,8 @@ export default function Board() {
     const { active, over } = event;
 
     if (!over) return;
-
+    console.log(over.data.current);
+    
     const targetColumnId = over.data.current.columnId;
 
     const draggedTask = tasks.find((t) => t.id === active.id);

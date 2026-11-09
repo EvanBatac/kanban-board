@@ -1,8 +1,21 @@
-import { useDraggable } from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 export default function TaskCard({ task, onDelete }) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragRef,
+    transform,
+  } = useDraggable({
     id: task.id,
+  });
+
+  const { setNodeRef: setDropRef } = useDroppable({
+    id: `task-${task.id}`,
+    data: {
+      columnId: task.column_id,
+      taskId: task.id,
+    },
   });
 
   const style = transform
@@ -11,7 +24,10 @@ export default function TaskCard({ task, onDelete }) {
 
   return (
     <article
-      ref={setNodeRef}
+      ref={(node) => {
+        setDragRef(node);
+        setDropRef(node);
+      }}
       style={style}
       {...listeners}
       {...attributes}
