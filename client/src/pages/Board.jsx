@@ -93,17 +93,21 @@ export default function Board() {
 
     if (!over) return;
 
+    const targetColumnId = over.data.current.columnId;
+
     const draggedTask = tasks.find((t) => t.id === active.id);
 
-    if (draggedTask.column_id === over.id) return;
+    if (draggedTask.column_id === targetColumnId) return;
 
-    const newPosition = tasks.filter((t) => t.column_id === over.id).length;
+    const newPosition = tasks.filter(
+      (t) => t.column_id === targetColumnId,
+    ).length;
 
     setTaskError("");
 
     try {
       await api.patch(`/boards/${id}/tasks/${active.id}/move`, {
-        column_id: over.id,
+        column_id: targetColumnId,
         position: newPosition,
       });
 

@@ -9,7 +9,10 @@ export default function Column({
   onCreateTask,
   onDeleteTask,
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  const { setNodeRef, isOver } = useDroppable({
+    id: `column-${column.id}`,
+    data: { columnId: column.id },
+  });
 
   return (
     <section
