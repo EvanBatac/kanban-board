@@ -101,15 +101,16 @@ export default function Board() {
 
     setTaskError("");
     try {
-      const res = await api.patch(
-        `/boards/${id}/tasks/${active.id}/move`,
-        {
-          column_id: over.id,
-          position: newPosition,
-        },
-      );
+      const res = await api.patch(`/boards/${id}/tasks/${active.id}/move`, {
+        column_id: over.id,
+        position: newPosition,
+      });
 
-      console.log(res.data);
+      const updatedTask = res.data?.data?.task;
+
+      setTasks((prev) =>
+        prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+      );
     } catch (err) {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
