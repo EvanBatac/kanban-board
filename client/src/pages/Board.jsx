@@ -87,6 +87,13 @@ export default function Board() {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
   }
+
+  function handleDragEnd(event){
+    const {active, over} = event;
+
+    console.log(active.id);
+    console.log(over?.id);
+  }
   return (
     <div>
       {isLoading ? (
@@ -110,7 +117,7 @@ export default function Board() {
           {columns.length === 0 ? (
             <p>No columns yet.</p>
           ) : (
-            <DndContext sensors={sensors}>
+            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
               <div>
                 {columns.map((column) => {
                   const columnTasks = tasks.filter(
