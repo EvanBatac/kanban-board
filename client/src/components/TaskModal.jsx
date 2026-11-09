@@ -13,6 +13,36 @@ export default function TaskModal({ task, onClose }) {
         >
           {task.title}
         </h2>
+
+        <div className="mt-4">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
+            Description
+          </h3>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-[#35433a]">
+            {task.description || "No description"}
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
+            Due date
+          </h3>
+          <p className="mt-1 text-sm text-[#35433a]">
+            {task.due_date
+              ? new Date(task.due_date).toLocaleDateString()
+              : "No due date"}
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
+            Assignee
+          </h3>
+          <p className="mt-1 text-sm text-[#35433a]">
+            {task.assignee_name || "Unassigned"}
+          </p>
+        </div>
+
         <div className="mt-7 flex justify-end">
           <button
             type="button"
