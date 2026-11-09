@@ -92,17 +92,27 @@ export default function Board() {
     const { active, over } = event;
 
     if (!over) return;
-    console.log(over.data.current);
-    
+
     const targetColumnId = over.data.current.columnId;
+    const overTaskId = over.data.current.taskId;
 
     const draggedTask = tasks.find((t) => t.id === active.id);
 
-    if (draggedTask.column_id === targetColumnId) return;
+    // Don't drop a task onto itself
+    if (overTaskId === active.id) return;
 
-    const newPosition = tasks.filter(
-      (t) => t.column_id === targetColumnId,
-    ).length;
+    // Don't move to empty space in the same column
+    if (draggedTask.column_id === targetColumnId && !overTaskId) return;
+
+    // Determine the new position
+    let newPosition;
+
+    if (overTaskId) {
+      const targetTask = tasks.find((t) => t.id === overTaskId);
+      newPosition = targetTask.position;
+    } else {
+      newPosition = tasks.filter((t) => t.column_id === targetColumnId).length;
+    }
 
     setTaskError("");
 
