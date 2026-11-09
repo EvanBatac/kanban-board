@@ -100,17 +100,16 @@ export default function Board() {
     const newPosition = tasks.filter((t) => t.column_id === over.id).length;
 
     setTaskError("");
+
     try {
-      const res = await api.patch(`/boards/${id}/tasks/${active.id}/move`, {
+      await api.patch(`/boards/${id}/tasks/${active.id}/move`, {
         column_id: over.id,
         position: newPosition,
       });
 
-      const updatedTask = res.data?.data?.task;
+      const res = await api.get(`/boards/${id}/tasks`);
 
-      setTasks((prev) =>
-        prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
-      );
+      setTasks(res.data.data.tasks);
     } catch (err) {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
@@ -213,9 +212,9 @@ export default function Board() {
               <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                 <div className="-mx-2 flex items-start gap-4 overflow-x-auto px-2 pb-6 pt-1">
                   {columns.map((column) => {
-                    const columnTasks = tasks.filter(
-                      (task) => task.column_id === column.id,
-                    );
+                    const columnTasks = tasks
+                      .filter((task) => task.column_id === column.id)
+                      .sort((a, b) => a.position - b.position);
 
                     return (
                       <Column
