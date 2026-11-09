@@ -88,11 +88,31 @@ export default function Board() {
     }
   }
 
-  function handleDragEnd(event){
-    const {active, over} = event;
+  async function handleDragEnd(event) {
+    const { active, over } = event;
 
-    console.log(active.id);
-    console.log(over?.id);
+    if (!over) return;
+
+    const draggedTask = tasks.find((t) => t.id === active.id);
+
+    if (draggedTask.column_id === over.id) return;
+
+    const newPosition = tasks.filter((t) => t.column_id === over.id).length;
+
+    setTaskError("");
+    try {
+      const res = await api.patch(
+        `/boards/${id}/tasks/${active.id}/move`,
+        {
+          column_id: over.id,
+          position: newPosition,
+        },
+      );
+
+      console.log(res.data);
+    } catch (err) {
+      setTaskError(err.response?.data?.message || "Something went wrong");
+    }
   }
   return (
     <div>
