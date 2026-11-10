@@ -8,9 +8,9 @@ export default function TaskModal({ task, onClose, onSave }) {
     e.preventDefault();
     setError("");
     try {
-      const res = await onSave(task.id, { title });
+      await onSave(task.id, { title });
 
-      console.log(res);
+      onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     }

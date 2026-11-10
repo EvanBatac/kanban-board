@@ -133,9 +133,13 @@ export default function Board() {
   }
 
   async function handleUpdateTask(taskId, fields) {
-    const res = await api.patch(`/boards/${id}/tasks/${taskId}`,  fields );
+    const res = await api.patch(`/boards/${id}/tasks/${taskId}`, fields);
 
-    return res.data;
+    const updatedTask = res.data?.data?.task;
+
+    setTasks((prev) =>
+      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+    );
   }
   return (
     <main className="min-h-[calc(100vh-68px)] overflow-hidden bg-[radial-gradient(ellipse_at_50%_0%,#eaf3ec_0%,transparent_42%),#f4f7f4] px-6 py-10 max-[520px]:px-4 max-[520px]:py-7">
