@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function TaskModal({ task, onClose, onSave }) {
+export default function TaskModal({ task, onClose, onSave, members }) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
   const [dueDate, setDueDate] = useState(

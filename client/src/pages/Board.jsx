@@ -20,6 +20,7 @@ export default function Board() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskTitle, setTaskTitle] = useState({});
   const [taskError, setTaskError] = useState("");
+  const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -39,11 +40,10 @@ export default function Board() {
         const taskRes = await api.get(`/boards/${id}/tasks`);
         const memberRes = await api.get(`/boards/${id}/members`);
 
-        console.log(memberRes.data);
-
         setBoard(boardRes.data?.data?.board);
         setColumns(columnRes.data?.data?.columns);
         setTasks(taskRes.data?.data?.tasks);
+        setMembers(memberRes.data?.data?.members);
       } catch (err) {
         setError(err.response?.data?.message || "Something went wrong");
       } finally {
@@ -273,6 +273,7 @@ export default function Board() {
       {selectedTask && (
         <TaskModal
           task={selectedTask}
+          members={members}
           onSave={handleUpdateTask}
           onClose={() => setSelectedTask(null)}
         />
