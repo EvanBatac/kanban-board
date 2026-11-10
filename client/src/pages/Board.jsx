@@ -131,6 +131,12 @@ export default function Board() {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
   }
+
+  async function handleUpdateTask(taskId, fields) {
+    const res = await api.patch(`/boards/${id}/tasks/${taskId}`,  fields );
+
+    return res.data;
+  }
   return (
     <main className="min-h-[calc(100vh-68px)] overflow-hidden bg-[radial-gradient(ellipse_at_50%_0%,#eaf3ec_0%,transparent_42%),#f4f7f4] px-6 py-10 max-[520px]:px-4 max-[520px]:py-7">
       {isLoading ? (
@@ -260,6 +266,7 @@ export default function Board() {
       {selectedTask && (
         <TaskModal
           task={selectedTask}
+          onSave={handleUpdateTask}
           onClose={() => setSelectedTask(null)}
         />
       )}
