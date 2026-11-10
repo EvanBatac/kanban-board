@@ -2,13 +2,14 @@ import { useState } from "react";
 
 export default function TaskModal({ task, onClose, onSave }) {
   const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || "");
   const [error, setError] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     try {
-      await onSave(task.id, { title });
+      await onSave(task.id, { title, description });
 
       onClose();
     } catch (err) {
@@ -36,9 +37,13 @@ export default function TaskModal({ task, onClose, onSave }) {
             <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
               Description
             </h3>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-[#35433a]">
-              {task.description || "No description"}
-            </p>
+            <textarea
+              name="description"
+              rows="5"
+              placeholder="Enter task description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            ></textarea>
           </div>
 
           <div className="mt-4">
