@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function TaskModal({ task, onClose, onSave, members }) {
   const [title, setTitle] = useState(task.title);
@@ -8,6 +8,20 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   );
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -27,54 +41,88 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   }
   return (
     <form onSubmit={handleSubmit}>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#17231f]/40 p-4 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#17231f]/45 p-4 backdrop-blur-sm">
         <section
           role="dialog"
           aria-modal="true"
           aria-labelledby="task-modal-title"
-          className="w-full max-w-lg rounded-2xl border border-[#e7ece8] bg-white p-6 shadow-[0_24px_80px_rgba(17,39,26,0.22)]"
+          className="my-auto w-full max-w-xl rounded-2xl border border-[#e7ece8] bg-white p-6 shadow-[0_24px_80px_rgba(17,39,26,0.22)] max-[520px]:p-5"
         >
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            id="task-modal-title"
-            className="m-0 text-xl font-bold tracking-[-0.5px] text-[#17231f]"
-          />
+          <div className="mb-6 flex items-start justify-between gap-4 border-b border-[#edf1ed] pb-5">
+            <div className="min-w-0 flex-1">
+              <p className="mb-2 text-[10px] font-extrabold tracking-[1.5px] text-[#438c61]">
+                TASK DETAILS
+              </p>
+              <label htmlFor="task-modal-title" className="sr-only">
+                Task title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                id="task-modal-title"
+                required
+                className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-2xl font-bold tracking-[-0.7px] text-[#17231f] outline-none transition placeholder:text-[#a1aaa4] hover:border-[#e7ece8] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)] max-[520px]:text-xl"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close task details"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-0 bg-[#f4f7f4] text-xl leading-none text-[#77827b] transition-colors hover:bg-[#eaf3ec] hover:text-[#287449] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
+            >
+              ×
+            </button>
+          </div>
 
-          <div className="mt-4">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
+          <div className="mt-5">
+            <label
+              htmlFor="task-description"
+              className="mb-2 block text-[11px] font-bold uppercase tracking-[1px] text-[#77827b]"
+            >
               Description
-            </h3>
+            </label>
             <textarea
+              id="task-description"
               name="description"
-              rows="5"
+              rows="4"
               placeholder="Enter task description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
+              className="w-full resize-y rounded-xl border border-[#e7ece8] bg-[#fbfcfb] px-3.5 py-3 text-[13px] leading-5 text-[#35433a] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
+            />
           </div>
 
-          <div className="mt-4">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
+          <div className="mt-5">
+            <label
+              htmlFor="task-due-date"
+              className="mb-2 block text-[11px] font-bold uppercase tracking-[1px] text-[#77827b]"
+            >
               Due date
-            </h3>
+            </label>
             <input
+              id="task-due-date"
               name="due_date"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
+              className="h-11 w-full rounded-xl border border-[#e7ece8] bg-[#fbfcfb] px-3.5 text-[13px] text-[#35433a] outline-none transition focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
             />
           </div>
 
-          <div className="mt-4">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
+          <div className="mt-5">
+            <label
+              htmlFor="task-assignee"
+              className="mb-2 block text-[11px] font-bold uppercase tracking-[1px] text-[#77827b]"
+            >
               Assignee
-            </h3>
+            </label>
             <select
+              id="task-assignee"
               name="assignedTo"
               value={assignedTo}
               onChange={(e) => setAssignedTo(e.target.value)}
+              className="h-11 w-full rounded-xl border border-[#e7ece8] bg-[#fbfcfb] px-3.5 text-[13px] text-[#35433a] outline-none transition focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
             >
               <option value="">Unassigned</option>
               {members.map((member) => (
@@ -85,17 +133,29 @@ export default function TaskModal({ task, onClose, onSave, members }) {
             </select>
           </div>
 
-          <div className="mt-7 flex justify-end">
+          {error && (
+            <p
+              className="mt-5 rounded-lg border border-[#f1d4d1] bg-[#fff7f6] px-4 py-3 text-sm text-[#a43d35]"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+          <div className="mt-7 flex justify-end gap-2 border-t border-[#edf1ed] pt-5 max-[400px]:flex-col-reverse">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border-0 bg-[#287449] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
+              className="h-11 rounded-lg border border-[#e1e8e2] bg-white px-4 text-[13px] font-bold text-[#536259] transition-colors hover:bg-[#f7f9f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[400px]:w-full"
             >
-              Close
+              Cancel
             </button>
-            <button type="submit">Save</button>
+            <button
+              type="submit"
+              className="h-11 rounded-lg border-0 bg-[#287449] px-5 text-[13px] font-bold text-white shadow-[0_4px_10px_rgba(40,116,73,0.18)] transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[400px]:w-full"
+            >
+              Save changes
+            </button>
           </div>
-          {error && <p>{error}</p>}
         </section>
       </div>
     </form>
