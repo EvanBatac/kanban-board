@@ -37,6 +37,9 @@ export default function Board() {
         const boardRes = await api.get(`/boards/${id}`);
         const columnRes = await api.get(`/boards/${id}/columns`);
         const taskRes = await api.get(`/boards/${id}/tasks`);
+        const memberRes = await api.get(`/boards/${id}/members`);
+
+        console.log(memberRes.data);
 
         setBoard(boardRes.data?.data?.board);
         setColumns(columnRes.data?.data?.columns);
