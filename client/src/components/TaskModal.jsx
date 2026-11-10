@@ -11,6 +11,7 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
   const [error, setError] = useState("");
   const [comments, setComments] = useState([]);
+  const [commentsError, setCommentsError] = useState("");
 
   const { id } = useParams();
 
@@ -30,11 +31,12 @@ export default function TaskModal({ task, onClose, onSave, members }) {
 
   useEffect(() => {
     async function loadComments() {
+      setCommentsError("");
       try {
         const res = await api.get(`/boards/${id}/tasks/${task.id}/comments`);
         setComments(res.data?.data?.comments);
       } catch (err) {
-        console.log(err.response?.data?.message);
+        setCommentsError(err.response?.data?.message || "Could not load comments");
       }
     }
     loadComments();
@@ -150,7 +152,13 @@ export default function TaskModal({ task, onClose, onSave, members }) {
             </select>
           </div>
 
-          {comments.length === 0 && <p>No comments yet</p>}
+          {commentsError ? (
+            <p>{commentsError}</p>
+          ) : comments.length === 0 ? (
+            <p>No comments yet</p>
+          ) : (
+            ""
+          )}
           {error && (
             <p
               className="mt-5 rounded-lg border border-[#f1d4d1] bg-[#fff7f6] px-4 py-3 text-sm text-[#a43d35]"
