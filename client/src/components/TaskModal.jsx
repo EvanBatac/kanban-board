@@ -209,32 +209,81 @@ export default function TaskModal({ task, onClose, onSave, members }) {
         </form>
 
         <div className="mt-6 border-t border-[#edf1ed] pt-5">
-          <h3 className="text-sm font-bold text-[#293a30]">Comments</h3>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-bold text-[#293a30]">Comments</h3>
+            <span className="rounded-full bg-[#f1f6f2] px-2.5 py-1 text-[11px] font-semibold text-[#52715b]">
+              {comments.length} {comments.length === 1 ? "comment" : "comments"}
+            </span>
+          </div>
 
-          {loadCommentsError ? (
-            <p>{loadCommentsError}</p>
-          ) : comments.length === 0 ? (
-            <p>No comments yet</p>
-          ) : (
-            comments.map((comment) => (
-              <div key={comment.id}>
-                <span>{comment.user_name}</span>
-                <p>{comment.content}</p>
-                <span>{new Date(comment.created_at).toLocaleString()}</span>
-              </div>
-            ))
-          )}
+          <div
+            className="max-h-56 space-y-3 overflow-y-auto rounded-xl bg-[#f8faf8] p-3"
+            aria-live="polite"
+          >
+            {loadCommentsError ? (
+              <p
+                className="rounded-lg border border-[#f1d4d1] bg-[#fff7f6] px-3 py-2.5 text-xs leading-5 text-[#a43d35]"
+                role="alert"
+              >
+                {loadCommentsError}
+              </p>
+            ) : comments.length === 0 ? (
+              <p className="py-5 text-center text-xs text-[#77827b]">
+                No comments yet. Start the conversation.
+              </p>
+            ) : (
+              comments.map((comment) => (
+                <article
+                  key={comment.id}
+                  className="rounded-lg border border-[#e9efea] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(23,35,31,0.04)]"
+                >
+                  <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <span className="text-xs font-bold text-[#293a30]">
+                      {comment.user_name}
+                    </span>
+                    <time
+                      className="text-[10px] text-[#89938c]"
+                      dateTime={comment.created_at}
+                    >
+                      {new Date(comment.created_at).toLocaleString()}
+                    </time>
+                  </div>
+                  <p className="whitespace-pre-wrap wrap-break-word text-[13px] leading-5 text-[#536259]">
+                    {comment.content}
+                  </p>
+                </article>
+              ))
+            )}
+          </div>
 
-          <form onSubmit={handleCreateComment}>
+          <form
+            onSubmit={handleCreateComment}
+            className="mt-3 flex items-stretch gap-2"
+          >
+            <label htmlFor="task-comment" className="sr-only">
+              Write a comment
+            </label>
             <input
+              id="task-comment"
               type="text"
               value={commentText}
               placeholder="Write a comment..."
               onChange={(e) => setCommentText(e.target.value)}
+              className="h-11 min-w-0 flex-1 rounded-xl border border-[#e2e9e3] bg-white px-3.5 text-[13px] text-[#35433a] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
             />
-            <button type="submit">Post</button>
+            <button
+              type="submit"
+              disabled={!commentText.trim()}
+              className="h-11 rounded-xl border-0 bg-[#287449] px-4 text-[13px] font-bold text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] disabled:cursor-not-allowed disabled:bg-[#a8bdad]"
+            >
+              Post
+            </button>
           </form>
-          {postCommentError && <p>{postCommentError}</p>}
+          {postCommentError && (
+            <p className="mt-2 text-xs leading-5 text-[#a43d35]" role="alert">
+              {postCommentError}
+            </p>
+          )}
         </div>
       </section>
     </div>
