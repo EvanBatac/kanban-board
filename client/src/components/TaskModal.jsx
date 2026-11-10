@@ -3,13 +3,16 @@ import { useState } from "react";
 export default function TaskModal({ task, onClose, onSave }) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
+  const [dueDate, setDueDate] = useState(
+    task.due_date ? task.due_date.slice(0, 10) : "",
+  );
   const [error, setError] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     try {
-      await onSave(task.id, { title, description });
+      await onSave(task.id, { title, description, due_date: dueDate || null });
 
       onClose();
     } catch (err) {
@@ -50,11 +53,12 @@ export default function TaskModal({ task, onClose, onSave }) {
             <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
               Due date
             </h3>
-            <p className="mt-1 text-sm text-[#35433a]">
-              {task.due_date
-                ? new Date(task.due_date).toLocaleDateString()
-                : "No due date"}
-            </p>
+            <input
+              name="due_date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
           </div>
 
           <div className="mt-4">
