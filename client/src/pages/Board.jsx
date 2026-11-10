@@ -21,6 +21,7 @@ export default function Board() {
   const [taskTitle, setTaskTitle] = useState({});
   const [taskError, setTaskError] = useState("");
   const [members, setMembers] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -51,6 +52,18 @@ export default function Board() {
       }
     }
     getBoardById();
+  }, [id]);
+
+  useEffect(() => {
+    async function loadActivity() {
+      try {
+        const res = await api.get(`/boards/${id}/activity`);
+        console.log(res.data);
+      } catch (err) {
+        console.log(err.response?.data?.message);
+      }
+    }
+    loadActivity();
   }, [id]);
 
   async function handleCreateColumn(e) {
