@@ -75,7 +75,9 @@ export default function TaskModal({ task, onClose, onSave, members }) {
       setComments((prev) => [...prev, res.data?.data?.comment]);
       setCommentText("");
     } catch (err) {
-      setPostCommentError(err.response?.data?.message || "Something went wrong");
+      setPostCommentError(
+        err.response?.data?.message || "Something went wrong",
+      );
     }
   }
   return (
@@ -218,6 +220,7 @@ export default function TaskModal({ task, onClose, onSave, members }) {
               <div key={comment.id}>
                 <span>{comment.user_name}</span>
                 <p>{comment.content}</p>
+                <span>{new Date(comment.created_at).toLocaleString()}</span>
               </div>
             ))
           )}
