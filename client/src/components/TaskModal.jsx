@@ -6,13 +6,19 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   const [dueDate, setDueDate] = useState(
     task.due_date ? task.due_date.slice(0, 10) : "",
   );
+  const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
   const [error, setError] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     try {
-      await onSave(task.id, { title, description, due_date: dueDate || null });
+      await onSave(task.id, {
+        title,
+        description,
+        due_date: dueDate || null,
+        assigned_to: assignedTo ? Number(assignedTo) : null,
+      });
 
       onClose();
     } catch (err) {
@@ -65,9 +71,18 @@ export default function TaskModal({ task, onClose, onSave, members }) {
             <h3 className="text-xs font-bold uppercase tracking-wide text-[#89968d]">
               Assignee
             </h3>
-            <p className="mt-1 text-sm text-[#35433a]">
-              {task.assignee_name || "Unassigned"}
-            </p>
+            <select
+              name="assignedTo"
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              {members.map((member) => (
+                <option key={member.user_id} value={member.user_id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mt-7 flex justify-end">
