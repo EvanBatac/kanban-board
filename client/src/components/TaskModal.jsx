@@ -11,7 +11,10 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
   const [error, setError] = useState("");
   const [comments, setComments] = useState([]);
-  const [commentsError, setCommentsError] = useState("");
+  const [loadCommentsError, setLoadCommentsError] = useState("");
+
+  const [commentText, setCommentText] = useState("");
+  const [postCommentError, setPostCommentError] = useState("");
 
   const { id } = useParams();
 
@@ -31,12 +34,12 @@ export default function TaskModal({ task, onClose, onSave, members }) {
 
   useEffect(() => {
     async function loadComments() {
-      setCommentsError("");
+      setLoadCommentsError("");
       try {
         const res = await api.get(`/boards/${id}/tasks/${task.id}/comments`);
         setComments(res.data?.data?.comments);
       } catch (err) {
-        setCommentsError(
+        setLoadCommentsError(
           err.response?.data?.message || "Could not load comments",
         );
       }
@@ -58,6 +61,21 @@ export default function TaskModal({ task, onClose, onSave, members }) {
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
+    }
+  }
+
+  async function handleCreateComment(e) {
+    e.preventDefault();
+    setPostCommentError("");
+    try {
+      const res = await api.post(`/boards/${id}/tasks/${task.id}/comments`, {
+        content: commentText,
+      });
+
+      setComments((prev) => [...prev, res.data?.data?.comment]);
+      setCommentText("");
+    } catch (err) {
+      setPostCommentError(err.response?.data?.message || "Something went wrong");
     }
   }
   return (
@@ -191,13 +209,29 @@ export default function TaskModal({ task, onClose, onSave, members }) {
         <div className="mt-6 border-t border-[#edf1ed] pt-5">
           <h3 className="text-sm font-bold text-[#293a30]">Comments</h3>
 
-          {commentsError ? (
-            <p>{commentsError}</p>
+          {loadCommentsError ? (
+            <p>{loadCommentsError}</p>
           ) : comments.length === 0 ? (
             <p>No comments yet</p>
           ) : (
-            ""
+            comments.map((comment) => (
+              <div key={comment.id}>
+                <span>{comment.user_name}</span>
+                <p>{comment.content}</p>
+              </div>
+            ))
           )}
+
+          <form onSubmit={handleCreateComment}>
+            <input
+              type="text"
+              value={commentText}
+              placeholder="Write a comment..."
+              onChange={(e) => setCommentText(e.target.value)}
+            />
+            <button type="submit">Post</button>
+          </form>
+          {postCommentError && <p>{postCommentError}</p>}
         </div>
       </section>
     </div>
