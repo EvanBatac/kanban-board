@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import api from "../api/client";
+import { useParams } from "react-router-dom";
 
 export default function TaskModal({ task, onClose, onSave, members }) {
   const [title, setTitle] = useState(task.title);
@@ -8,6 +10,8 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   );
   const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
   const [error, setError] = useState("");
+
+  const { id } = useParams();
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -23,6 +27,18 @@ export default function TaskModal({ task, onClose, onSave, members }) {
     };
   }, [onClose]);
 
+  useEffect(() => {
+    async function loadComments() {
+      try {
+        const res = await api.get(`/boards/${id}/tasks/${task.id}/comments`);
+        console.log(res.data);
+      } catch (err) {
+        console.log(err.response?.data?.message);
+      }
+    }
+    loadComments();
+  }, [id, task.id]);
+  
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
