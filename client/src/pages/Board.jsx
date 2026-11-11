@@ -32,6 +32,8 @@ export default function Board() {
   const [lastSeenId, setLastSeenId] = useState(0);
   const [activityBaselineBoardId, setActivityBaselineBoardId] = useState(null);
   const [unreadActivityIds, setUnreadActivityIds] = useState([]);
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberError, setMemberError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,6 +43,7 @@ export default function Board() {
     }),
   );
 
+  // Load the board, columns, tasks, and members for the current board ID.
   useEffect(() => {
     async function getBoardById() {
       setActivity([]);
@@ -66,6 +69,7 @@ export default function Board() {
     getBoardById();
   }, [id]);
 
+  // Load activity and track which entries the current user has seen.
   useEffect(() => {
     async function loadActivity() {
       setActivityError("");
@@ -101,6 +105,7 @@ export default function Board() {
     loadActivity();
   }, [id, activityVersion, activityBaselineBoardId]);
 
+  // Save the newest activity entry as seen while the activity panel is open.
   useEffect(() => {
     if (!isActivityOpen || activity.length === 0) return;
 
@@ -120,6 +125,7 @@ export default function Board() {
         (entry) => entry.id > lastSeenId && entry.user_id !== user?.id,
       ).length;
 
+  // Activity panel actions.
   function toggleActivity() {
     if (!isActivityOpen) {
       setUnreadActivityIds(
@@ -149,6 +155,7 @@ export default function Board() {
     setFocusComments(entry.action === "commented");
   }
 
+  // Board and task form actions.
   async function handleCreateColumn(e) {
     e.preventDefault();
     setColumnError("");
@@ -244,6 +251,22 @@ export default function Board() {
     );
     setActivityVersion((v) => v + 1);
   }
+
+  async function handleAddMember(e) {
+    e.preventDefault();
+    setMemberError("");
+    try {
+      const res = await api.post(`/boards/${id}/members`, {
+        email: memberEmail,
+      });
+
+      console.log(res.data);
+    } catch (err) {
+      setMemberError(err.response?.data?.message || "Something went wrong");
+    }
+  }
+
+  // Main board layout: loading and error states, board header, and columns.
   return (
     <main className="min-h-[calc(100vh-68px)] overflow-hidden bg-[radial-gradient(ellipse_at_50%_0%,#eaf3ec_0%,transparent_42%),#f4f7f4] px-6 py-10 max-[520px]:px-4 max-[520px]:py-7">
       {isLoading ? (
@@ -287,6 +310,7 @@ export default function Board() {
                 </p>
               </div>
               <div className="flex w-full max-w-md items-start gap-2 max-[700px]:max-w-none">
+                {/* Add a column to this board. */}
                 <form
                   onSubmit={handleCreateColumn}
                   className="flex min-w-0 flex-1 gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)] max-[480px]:flex-col"
@@ -306,6 +330,30 @@ export default function Board() {
                     + Add column
                   </button>
                 </form>
+                {/* Owners and admins can add a member by email. */}
+                {(board?.role === "owner" || board?.role === "admin") && (
+                  <form
+                    onSubmit={handleAddMember}
+                    className="flex gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)]"
+                  >
+                    <input
+                      type="email"
+                      value={memberEmail}
+                      placeholder="Member email"
+                      aria-label="Member email"
+                      onChange={(e) => setMemberEmail(e.target.value)}
+                      className="h-11 min-w-0 flex-1 rounded-lg border border-transparent bg-[#fbfcfb] px-3.5 text-[13px] text-[#1d2a22] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
+                    />
+                    <button
+                      type="submit"
+                      className="h-11 shrink-0 rounded-lg border-0 bg-[#287449] px-4 text-[13px] font-bold text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
+                    >
+                      Add member
+                    </button>
+                  </form>
+                )}
+                {memberError && <p>{memberError}</p>}
+                {/* Open the recent activity panel and show its unread count. */}
                 <div className="relative">
                   <button
                     type="button"
@@ -425,6 +473,7 @@ export default function Board() {
                 {taskError}
               </p>
             )}
+            {/* Show the empty-board prompt or the board's draggable columns. */}
             {columns.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#cfdcd2] bg-[rgba(255,255,255,0.62)] px-6 py-14 text-center">
                 <span
@@ -473,6 +522,7 @@ export default function Board() {
           </div>
         </>
       )}
+      {/* Task details and editing modal for the selected task. */}
       {selectedTask && (
         <TaskModal
           task={selectedTask}
