@@ -9,9 +9,11 @@ import {
 import api from "../api/client";
 import Column from "../components/Column";
 import TaskModal from "../components/TaskModal";
+import { useAuth } from "../context/AuthContext";
 
 export default function Board() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [board, setBoard] = useState(null);
   const [columns, setColumns] = useState([]);
   const [columnName, setColumnName] = useState("");
@@ -26,6 +28,8 @@ export default function Board() {
   const [isActivityLoading, setIsActivityLoading] = useState(true);
   const [activityVersion, setActivityVersion] = useState(0);
   const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const [lastSeenId, setLastSeenId] = useState(0);
+  const [activityBaselineBoardId, setActivityBaselineBoardId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -65,7 +69,25 @@ export default function Board() {
       setActivityError("");
       try {
         const res = await api.get(`/boards/${id}/activity`);
-        setActivity(res.data?.data?.activity);
+        const loadedActivity = res.data?.data?.activity || [];
+        setActivity(loadedActivity);
+
+        if (activityBaselineBoardId !== id) {
+          const storedLastSeenId = localStorage.getItem(`activity-seen-${id}`);
+          const newestEntry = loadedActivity.reduce(
+            (newest, entry) =>
+              !newest || entry.id > newest.id ? entry : newest,
+            null,
+          );
+
+          if (storedLastSeenId !== null) {
+            setLastSeenId(Number(storedLastSeenId));
+          } else if (newestEntry) {
+            setLastSeenId(newestEntry.id);
+            localStorage.setItem(`activity-seen-${id}`, newestEntry.id);
+          }
+          setActivityBaselineBoardId(id);
+        }
       } catch (err) {
         setActivityError(
           err.response?.data?.message || "Could not load activity",
@@ -75,7 +97,36 @@ export default function Board() {
       }
     }
     loadActivity();
-  }, [id, activityVersion]);
+  }, [id, activityVersion, activityBaselineBoardId]);
+
+  useEffect(() => {
+    if (!isActivityOpen || activity.length === 0) return;
+
+    const newestEntry = activity.reduce(
+      (newest, entry) => (!newest || entry.id > newest.id ? entry : newest),
+      null,
+    );
+
+    if (newestEntry) {
+      localStorage.setItem(`activity-seen-${id}`, newestEntry.id);
+    }
+  }, [id, isActivityOpen, activity]);
+
+  const unreadCount = isActivityOpen
+    ? 0
+    : activity.filter(
+        (entry) => entry.id > lastSeenId && entry.user_id !== user?.id,
+      ).length;
+
+  function toggleActivity() {
+    if (isActivityOpen) {
+      const storedLastSeenId = localStorage.getItem(`activity-seen-${id}`);
+      if (storedLastSeenId !== null) {
+        setLastSeenId(Number(storedLastSeenId));
+      }
+    }
+    setIsActivityOpen((open) => !open);
+  }
 
   async function handleCreateColumn(e) {
     e.preventDefault();
@@ -237,12 +288,17 @@ export default function Board() {
                 <div className="relative">
                   <button
                     type="button"
-                    aria-label="Toggle activity"
+                    aria-label={`Toggle activity${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
                     aria-expanded={isActivityOpen}
-                    onClick={() => setIsActivityOpen((open) => !open)}
+                    onClick={toggleActivity}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e7ece8] bg-white text-lg shadow-[0_8px_24px_rgba(27,54,40,0.05)] transition hover:border-[#cfdcd2] hover:bg-[#f8fbf8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
                   >
                     🔔
+                    {unreadCount > 0 && !isActivityOpen && (
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-red-600 px-1 text-[10px] leading-none font-bold text-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
                   </button>
                   {isActivityOpen && (
                     <section className="absolute right-0 top-full z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-[#e7ece8] bg-white shadow-[0_18px_48px_rgba(27,54,40,0.16)]">
