@@ -238,25 +238,48 @@ export default function Board() {
                   <button
                     type="button"
                     aria-label="Toggle activity"
+                    aria-expanded={isActivityOpen}
                     onClick={() => setIsActivityOpen((open) => !open)}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e7ece8] bg-white text-lg shadow-[0_8px_24px_rgba(27,54,40,0.05)] transition hover:border-[#cfdcd2] hover:bg-[#f8fbf8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
                   >
                     🔔
                   </button>
                   {isActivityOpen && (
-                    <section className="absolute right-0 top-full z-40 w-80">
-                      <h2>Activity</h2>
+                    <section className="absolute right-0 top-full z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-[#e7ece8] bg-white shadow-[0_18px_48px_rgba(27,54,40,0.16)]">
+                      <h2 className="m-0 border-b border-[#edf1ee] px-5 py-4 text-sm font-bold text-[#17231f]">
+                        Activity
+                      </h2>
                       {isActivityLoading ? (
-                        <p>Loading activity...</p>
+                        <p className="m-0 px-5 py-5 text-sm text-[#77827b]">
+                          Loading activity...
+                        </p>
                       ) : activityError ? (
-                        <p>{activityError}</p>
+                        <p
+                          className="m-0 px-5 py-5 text-sm text-[#a43d35]"
+                          role="alert"
+                        >
+                          {activityError}
+                        </p>
                       ) : activity.length === 0 ? (
-                        <p>No activity yet.</p>
+                        <p className="m-0 px-5 py-5 text-sm text-[#77827b]">
+                          No activity yet.
+                        </p>
                       ) : (
-                        <ul>
+                        <ul className="m-0 max-h-96 list-none divide-y divide-[#edf1ee] overflow-y-auto p-0">
                           {activity.map((entry) => (
-                            <li key={entry.id}>
-                              {entry.user_name || "Someone"} {entry.details}{" "}
-                              {new Date(entry.created_at).toLocaleString()}
+                            <li
+                              key={entry.id}
+                              className="px-5 py-4 text-sm text-[#526158]"
+                            >
+                              <p className="m-0 leading-relaxed">
+                                <span className="font-semibold text-[#27372d]">
+                                  {entry.user_name || "Someone"}
+                                </span>{" "}
+                                {entry.details}
+                              </p>
+                              <time className="mt-1 block text-xs text-[#89958d]">
+                                {new Date(entry.created_at).toLocaleString()}
+                              </time>
                             </li>
                           ))}
                         </ul>
