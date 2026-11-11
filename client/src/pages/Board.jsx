@@ -24,6 +24,7 @@ export default function Board() {
   const [activity, setActivity] = useState([]);
   const [activityError, setActivityError] = useState("");
   const [isActivityLoading, setIsActivityLoading] = useState(true);
+  const [activityVersion, setActivityVersion] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -35,6 +36,8 @@ export default function Board() {
 
   useEffect(() => {
     async function getBoardById() {
+      setActivity([])
+      setIsActivityLoading(true)
       setIsLoading(true);
       setError("");
       try {
@@ -58,7 +61,6 @@ export default function Board() {
 
   useEffect(() => {
     async function loadActivity() {
-      setIsActivityLoading(true);
       setActivityError("");
       try {
         const res = await api.get(`/boards/${id}/activity`);
@@ -72,7 +74,7 @@ export default function Board() {
       }
     }
     loadActivity();
-  }, [id]);
+  }, [id, activityVersion]);
 
   async function handleCreateColumn(e) {
     e.preventDefault();
@@ -94,6 +96,7 @@ export default function Board() {
         title: taskTitle[columnId],
       });
       setTasks((prev) => [...prev, res.data?.data?.task]);
+      setActivityVersion((v) => v + 1);
       setTaskTitle((prev) => ({
         ...prev,
         [columnId]: "",
@@ -109,6 +112,7 @@ export default function Board() {
       await api.delete(`/boards/${id}/tasks/${taskId}`);
 
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      setActivityVersion((v) => v + 1);
     } catch (err) {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
@@ -150,7 +154,8 @@ export default function Board() {
 
       const res = await api.get(`/boards/${id}/tasks`);
 
-      setTasks(res.data.data.tasks);
+      setTasks(res.data?.data?.tasks);
+      setActivityVersion((v) => v + 1);
     } catch (err) {
       setTaskError(err.response?.data?.message || "Something went wrong");
     }
@@ -164,6 +169,7 @@ export default function Board() {
     setTasks((prev) =>
       prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
     );
+    setActivityVersion((v) => v + 1);
   }
   return (
     <main className="min-h-[calc(100vh-68px)] overflow-hidden bg-[radial-gradient(ellipse_at_50%_0%,#eaf3ec_0%,transparent_42%),#f4f7f4] px-6 py-10 max-[520px]:px-4 max-[520px]:py-7">
