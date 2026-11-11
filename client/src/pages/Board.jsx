@@ -25,6 +25,7 @@ export default function Board() {
   const [activityError, setActivityError] = useState("");
   const [isActivityLoading, setIsActivityLoading] = useState(true);
   const [activityVersion, setActivityVersion] = useState(0);
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -213,25 +214,57 @@ export default function Board() {
                   Plan, track, and move work across your team.
                 </p>
               </div>
-              <form
-                onSubmit={handleCreateColumn}
-                className="flex w-full max-w-md gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)] max-[700px]:max-w-none max-[480px]:flex-col"
-              >
-                <input
-                  type="text"
-                  value={columnName}
-                  placeholder="Name a new column"
-                  aria-label="Column name"
-                  onChange={(e) => setColumnName(e.target.value)}
-                  className="h-11 min-w-0 flex-1 rounded-lg border border-transparent bg-[#fbfcfb] px-3.5 text-[13px] text-[#1d2a22] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
-                />
-                <button
-                  type="submit"
-                  className="h-11 shrink-0 rounded-lg border-0 bg-[#287449] px-4 text-[13px] font-bold text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[480px]:w-full"
+              <div className="flex w-full max-w-md items-start gap-2 max-[700px]:max-w-none">
+                <form
+                  onSubmit={handleCreateColumn}
+                  className="flex min-w-0 flex-1 gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)] max-[480px]:flex-col"
                 >
-                  + Add column
-                </button>
-              </form>
+                  <input
+                    type="text"
+                    value={columnName}
+                    placeholder="Name a new column"
+                    aria-label="Column name"
+                    onChange={(e) => setColumnName(e.target.value)}
+                    className="h-11 min-w-0 flex-1 rounded-lg border border-transparent bg-[#fbfcfb] px-3.5 text-[13px] text-[#1d2a22] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
+                  />
+                  <button
+                    type="submit"
+                    className="h-11 shrink-0 rounded-lg border-0 bg-[#287449] px-4 text-[13px] font-bold text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[480px]:w-full"
+                  >
+                    + Add column
+                  </button>
+                </form>
+                <div className="relative">
+                  <button
+                    type="button"
+                    aria-label="Toggle activity"
+                    onClick={() => setIsActivityOpen((open) => !open)}
+                  >
+                    🔔
+                  </button>
+                  {isActivityOpen && (
+                    <section className="absolute right-0 top-full z-40 w-80">
+                      <h2>Activity</h2>
+                      {isActivityLoading ? (
+                        <p>Loading activity...</p>
+                      ) : activityError ? (
+                        <p>{activityError}</p>
+                      ) : activity.length === 0 ? (
+                        <p>No activity yet.</p>
+                      ) : (
+                        <ul>
+                          {activity.map((entry) => (
+                            <li key={entry.id}>
+                              {entry.user_name || "Someone"} {entry.details}{" "}
+                              {new Date(entry.created_at).toLocaleString()}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  )}
+                </div>
+              </div>
             </div>
             {columnError && (
               <p
@@ -294,25 +327,6 @@ export default function Board() {
                 </div>
               </DndContext>
             )}
-            <section>
-              <h2>Activity</h2>
-              {isActivityLoading ? (
-                <p>Loading activity...</p>
-              ) : activityError ? (
-                <p>{activityError}</p>
-              ) : activity.length === 0 ? (
-                <p>No activity yet.</p>
-              ) : (
-                <ul>
-                  {activity.map((entry) => (
-                    <li key={entry.id}>
-                      {entry.user_name || "Someone"} {entry.details}{" "}
-                      {new Date(entry.created_at).toLocaleString()}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
           </div>
         </>
       )}
