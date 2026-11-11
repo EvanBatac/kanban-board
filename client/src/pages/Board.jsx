@@ -260,7 +260,9 @@ export default function Board() {
         email: memberEmail,
       });
 
-      console.log(res.data);
+      setMembers((prev) => [...prev, res.data?.data?.member]);
+      setMemberEmail("");
+      setActivityVersion((v) => v + 1);
     } catch (err) {
       setMemberError(err.response?.data?.message || "Something went wrong");
     }
