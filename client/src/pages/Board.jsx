@@ -30,6 +30,7 @@ export default function Board() {
   const [isActivityOpen, setIsActivityOpen] = useState(false);
   const [lastSeenId, setLastSeenId] = useState(0);
   const [activityBaselineBoardId, setActivityBaselineBoardId] = useState(null);
+  const [unreadActivityIds, setUnreadActivityIds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -119,6 +120,16 @@ export default function Board() {
       ).length;
 
   function toggleActivity() {
+    if (!isActivityOpen) {
+      setUnreadActivityIds(
+        activity
+          .filter(
+            (entry) => entry.id > lastSeenId && entry.user_id !== user?.id,
+          )
+          .map((entry) => entry.id),
+      );
+    }
+
     if (isActivityOpen) {
       const storedLastSeenId = localStorage.getItem(`activity-seen-${id}`);
       if (storedLastSeenId !== null) {
@@ -325,16 +336,39 @@ export default function Board() {
                           {activity.map((entry) => (
                             <li
                               key={entry.id}
-                              className="px-5 py-4 text-sm text-[#526158]"
+                              className={`px-5 py-4 text-sm text-[#526158] ${
+                                unreadActivityIds.includes(entry.id)
+                                  ? "border-l-2 border-[#438c61] bg-[#f1f8f3]"
+                                  : ""
+                              }`}
                             >
                               <p className="m-0 leading-relaxed">
-                                <span className="font-semibold text-[#27372d]">
+                                <span
+                                  className={`text-[#27372d] ${
+                                    unreadActivityIds.includes(entry.id)
+                                      ? "font-bold"
+                                      : "font-semibold"
+                                  }`}
+                                >
                                   {entry.user_name || "Someone"}
                                 </span>{" "}
-                                {entry.details}
+                                <span
+                                  className={
+                                    unreadActivityIds.includes(entry.id)
+                                      ? "font-semibold"
+                                      : ""
+                                  }
+                                >
+                                  {entry.details}
+                                </span>
                               </p>
-                              <time className="mt-1 block text-xs text-[#89958d]">
+                              <time className="mt-1 flex items-center gap-2 text-xs text-[#89958d]">
                                 {new Date(entry.created_at).toLocaleString()}
+                                {unreadActivityIds.includes(entry.id) && (
+                                  <span className="text-[9px] font-bold tracking-wider text-[#438c61]">
+                                    NEW
+                                  </span>
+                                )}
                               </time>
                             </li>
                           ))}
