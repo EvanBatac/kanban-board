@@ -307,6 +307,25 @@ export default function Board() {
                 <h1 className="m-0 text-[clamp(28px,5vw,36px)] leading-tight font-bold tracking-[-1.3px] text-[#17231f]">
                   {board?.name}
                 </h1>
+                <div
+                  className="mt-3 flex flex-wrap gap-1.5"
+                  aria-label="Board members"
+                  role="group"
+                >
+                  {members.map((member) => (
+                    <span
+                      key={member.user_id}
+                      title={`${member.name || "?"} (${member.role})`}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                        member.role === "owner"
+                          ? "bg-[#e6f3e9] text-[#287449]"
+                          : "bg-[#e9edeb] text-[#59665e]"
+                      }`}
+                    >
+                      {member.name?.[0]?.toUpperCase() || "?"}
+                    </span>
+                  ))}
+                </div>
                 <p className="mt-2 mb-0 text-sm text-[#77827b]">
                   Plan, track, and move work across your team.
                 </p>
