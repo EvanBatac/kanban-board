@@ -311,11 +311,11 @@ export default function Board() {
                   Plan, track, and move work across your team.
                 </p>
               </div>
-              <div className="flex w-full max-w-md items-start gap-2 max-[700px]:max-w-none">
+              <div className="flex w-full max-w-3xl items-start gap-2 max-[700px]:max-w-none max-[700px]:flex-wrap">
                 {/* Add a column to this board. */}
                 <form
                   onSubmit={handleCreateColumn}
-                  className="flex min-w-0 flex-1 gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)] max-[480px]:flex-col"
+                  className="flex min-w-0 flex-1 gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)] max-[480px]:w-full max-[480px]:flex-col"
                 >
                   <input
                     type="text"
@@ -334,27 +334,37 @@ export default function Board() {
                 </form>
                 {/* Owners and admins can add a member by email. */}
                 {(board?.role === "owner" || board?.role === "admin") && (
-                  <form
-                    onSubmit={handleAddMember}
-                    className="flex gap-2 rounded-xl border border-[#e7ece8] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)]"
-                  >
-                    <input
-                      type="email"
-                      value={memberEmail}
-                      placeholder="Member email"
-                      aria-label="Member email"
-                      onChange={(e) => setMemberEmail(e.target.value)}
-                      className="h-11 min-w-0 flex-1 rounded-lg border border-transparent bg-[#fbfcfb] px-3.5 text-[13px] text-[#1d2a22] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
-                    />
-                    <button
-                      type="submit"
-                      className="h-11 shrink-0 rounded-lg border-0 bg-[#287449] px-4 text-[13px] font-bold text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
+                  <div className="min-w-0 flex-1">
+                    <form
+                      onSubmit={handleAddMember}
+                      className="flex min-w-0 gap-2 rounded-xl border border-[#dce9df] bg-white p-2 shadow-[0_8px_24px_rgba(27,54,40,0.05)] max-[480px]:flex-col"
                     >
-                      Add member
-                    </button>
-                  </form>
+                      <input
+                        type="email"
+                        value={memberEmail}
+                        placeholder="Member email"
+                        aria-label="Member email"
+                        required
+                        onChange={(e) => setMemberEmail(e.target.value)}
+                        className="h-11 min-w-0 flex-1 rounded-lg border border-[#e7ece8] bg-[#fbfcfb] px-3.5 text-[13px] text-[#1d2a22] outline-none transition placeholder:text-[#a1aaa4] focus:border-[#63a57a] focus:bg-white focus:shadow-[0_0_0_3px_rgba(76,151,99,0.13)]"
+                      />
+                      <button
+                        type="submit"
+                        className="h-11 shrink-0 rounded-lg border-0 bg-[#287449] px-4 text-[13px] font-bold whitespace-nowrap text-white transition-colors hover:bg-[#20653e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[480px]:w-full"
+                      >
+                        Add member
+                      </button>
+                    </form>
+                    {memberError && (
+                      <p
+                        className="mt-2 mb-0 rounded-lg border border-[#f1d4d1] bg-[#fff7f6] px-3 py-2 text-xs text-[#a43d35]"
+                        role="alert"
+                      >
+                        {memberError}
+                      </p>
+                    )}
+                  </div>
                 )}
-                {memberError && <p>{memberError}</p>}
                 {/* Open the recent activity panel and show its unread count. */}
                 <div className="relative">
                   <button
