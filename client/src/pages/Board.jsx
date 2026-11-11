@@ -20,6 +20,7 @@ export default function Board() {
   const [columnError, setColumnError] = useState("");
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [focusComments, setFocusComments] = useState(false);
   const [taskTitle, setTaskTitle] = useState({});
   const [taskError, setTaskError] = useState("");
   const [members, setMembers] = useState([]);
@@ -42,8 +43,8 @@ export default function Board() {
 
   useEffect(() => {
     async function getBoardById() {
-      setActivity([])
-      setIsActivityLoading(true)
+      setActivity([]);
+      setIsActivityLoading(true);
       setIsLoading(true);
       setError("");
       try {
@@ -137,6 +138,15 @@ export default function Board() {
       }
     }
     setIsActivityOpen((open) => !open);
+  }
+
+  function handleActivityClick(entry) {
+    const task = tasks.find((t) => t.id === entry.task_id);
+    if (!task) return;
+
+    setSelectedTask(task);
+    setIsActivityOpen(false);
+    setFocusComments(entry.action === "commented");
   }
 
   async function handleCreateColumn(e) {
@@ -334,42 +344,62 @@ export default function Board() {
                       ) : (
                         <ul className="m-0 max-h-96 list-none divide-y divide-[#edf1ee] overflow-y-auto p-0">
                           {activity.map((entry) => (
-                            <li
-                              key={entry.id}
-                              className={`px-5 py-4 text-sm text-[#526158] ${
-                                unreadActivityIds.includes(entry.id)
-                                  ? "border-l-2 border-[#438c61] bg-[#f1f8f3]"
-                                  : ""
-                              }`}
-                            >
-                              <p className="m-0 leading-relaxed">
-                                <span
-                                  className={`text-[#27372d] ${
-                                    unreadActivityIds.includes(entry.id)
-                                      ? "font-bold"
-                                      : "font-semibold"
-                                  }`}
-                                >
-                                  {entry.user_name || "Someone"}
-                                </span>{" "}
-                                <span
-                                  className={
-                                    unreadActivityIds.includes(entry.id)
-                                      ? "font-semibold"
-                                      : ""
-                                  }
-                                >
-                                  {entry.details}
-                                </span>
-                              </p>
-                              <time className="mt-1 flex items-center gap-2 text-xs text-[#89958d]">
-                                {new Date(entry.created_at).toLocaleString()}
-                                {unreadActivityIds.includes(entry.id) && (
-                                  <span className="text-[9px] font-bold tracking-wider text-[#438c61]">
-                                    NEW
-                                  </span>
-                                )}
-                              </time>
+                            <li key={entry.id}>
+                              {(() => {
+                                const isUnread = unreadActivityIds.includes(
+                                  entry.id,
+                                );
+                                const content = (
+                                  <>
+                                    <p className="m-0 leading-relaxed">
+                                      <span
+                                        className={`text-[#27372d] ${
+                                          isUnread
+                                            ? "font-bold"
+                                            : "font-semibold"
+                                        }`}
+                                      >
+                                        {entry.user_name || "Someone"}
+                                      </span>{" "}
+                                      <span
+                                        className={
+                                          isUnread ? "font-semibold" : ""
+                                        }
+                                      >
+                                        {entry.details}
+                                      </span>
+                                    </p>
+                                    <time className="mt-1 flex items-center gap-2 text-xs text-[#89958d]">
+                                      {new Date(
+                                        entry.created_at,
+                                      ).toLocaleString()}
+                                      {isUnread && (
+                                        <span className="text-[9px] font-bold tracking-wider text-[#438c61]">
+                                          NEW
+                                        </span>
+                                      )}
+                                    </time>
+                                  </>
+                                );
+                                const className = `block w-full px-5 py-4 text-left text-sm text-[#526158] ${
+                                  isUnread
+                                    ? "border-l-2 border-[#438c61] bg-[#f1f8f3]"
+                                    : ""
+                                }`;
+
+                                return entry.task_id !== null &&
+                                  entry.task_id !== undefined ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleActivityClick(entry)}
+                                    className={`${className} border-0 hover:bg-[#f5f8f5]`}
+                                  >
+                                    {content}
+                                  </button>
+                                ) : (
+                                  <div className={className}>{content}</div>
+                                );
+                              })()}
                             </li>
                           ))}
                         </ul>
@@ -447,8 +477,12 @@ export default function Board() {
         <TaskModal
           task={selectedTask}
           members={members}
+          focusComments={focusComments}
           onSave={handleUpdateTask}
-          onClose={() => setSelectedTask(null)}
+          onClose={() => {
+            setSelectedTask(null);
+            setFocusComments(false);
+          }}
         />
       )}
     </main>

@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../api/client";
 import { useParams } from "react-router-dom";
 
-export default function TaskModal({ task, onClose, onSave, members }) {
+export default function TaskModal({
+  task,
+  onClose,
+  onSave,
+  members,
+  focusComments,
+}) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
   const [dueDate, setDueDate] = useState(
@@ -12,6 +18,9 @@ export default function TaskModal({ task, onClose, onSave, members }) {
   const [error, setError] = useState("");
   const [comments, setComments] = useState([]);
   const [loadCommentsError, setLoadCommentsError] = useState("");
+  const [highlightLatest, setHighlightLatest] = useState(false);
+  const commentsListRef = useRef(null);
+  const commentsSectionRef = useRef(null);
 
   const [commentText, setCommentText] = useState("");
   const [postCommentError, setPostCommentError] = useState("");
@@ -46,6 +55,26 @@ export default function TaskModal({ task, onClose, onSave, members }) {
     }
     loadComments();
   }, [id, task.id]);
+
+  useEffect(() => {
+    if (!focusComments || comments.length === 0) return;
+
+    if (commentsListRef.current) {
+      commentsListRef.current.scrollTop = commentsListRef.current.scrollHeight;
+    }
+    commentsSectionRef.current?.scrollIntoView({ block: "nearest" });
+
+    let highlightTimeoutId;
+    const startTimeoutId = setTimeout(() => {
+      setHighlightLatest(true);
+      highlightTimeoutId = setTimeout(() => setHighlightLatest(false), 2000);
+    }, 0);
+
+    return () => {
+      clearTimeout(startTimeoutId);
+      clearTimeout(highlightTimeoutId);
+    };
+  }, [focusComments, comments]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -208,7 +237,10 @@ export default function TaskModal({ task, onClose, onSave, members }) {
           </div>
         </form>
 
-        <div className="mt-6 border-t border-[#edf1ed] pt-5">
+        <div
+          ref={commentsSectionRef}
+          className="mt-6 border-t border-[#edf1ed] pt-5"
+        >
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="text-sm font-bold text-[#293a30]">Comments</h3>
             <span className="rounded-full bg-[#f1f6f2] px-2.5 py-1 text-[11px] font-semibold text-[#52715b]">
@@ -217,6 +249,7 @@ export default function TaskModal({ task, onClose, onSave, members }) {
           </div>
 
           <div
+            ref={commentsListRef}
             className="max-h-56 space-y-3 overflow-y-auto rounded-xl bg-[#f8faf8] p-3"
             aria-live="polite"
           >
@@ -235,7 +268,12 @@ export default function TaskModal({ task, onClose, onSave, members }) {
               comments.map((comment) => (
                 <article
                   key={comment.id}
-                  className="rounded-lg border border-[#e9efea] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(23,35,31,0.04)]"
+                  className={`rounded-lg border border-[#e9efea] px-3.5 py-3 shadow-[0_1px_2px_rgba(23,35,31,0.04)] transition-colors duration-700 ${
+                    highlightLatest &&
+                    comment.id === comments[comments.length - 1]?.id
+                      ? "bg-[#eaf4ed]"
+                      : "bg-white"
+                  }`}
                 >
                   <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <span className="text-xs font-bold text-[#293a30]">
