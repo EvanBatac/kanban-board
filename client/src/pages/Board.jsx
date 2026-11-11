@@ -22,6 +22,8 @@ export default function Board() {
   const [taskError, setTaskError] = useState("");
   const [members, setMembers] = useState([]);
   const [activity, setActivity] = useState([]);
+  const [activityError, setActivityError] = useState("");
+  const [isActivityLoading, setIsActivityLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -56,11 +58,17 @@ export default function Board() {
 
   useEffect(() => {
     async function loadActivity() {
+      setIsActivityLoading(true);
+      setActivityError("");
       try {
         const res = await api.get(`/boards/${id}/activity`);
-        console.log(res.data);
+        setActivity(res.data?.data?.activity);
       } catch (err) {
-        console.log(err.response?.data?.message);
+        setActivityError(
+          err.response?.data?.message || "Could not load activity",
+        );
+      } finally {
+        setIsActivityLoading(false);
       }
     }
     loadActivity();
@@ -280,6 +288,25 @@ export default function Board() {
                 </div>
               </DndContext>
             )}
+            <section>
+              <h2>Activity</h2>
+              {isActivityLoading ? (
+                <p>Loading activity...</p>
+              ) : activityError ? (
+                <p>{activityError}</p>
+              ) : activity.length === 0 ? (
+                <p>No activity yet.</p>
+              ) : (
+                <ul>
+                  {activity.map((entry) => (
+                    <li key={entry.id}>
+                      {entry.user_name || "Someone"} {entry.details}{" "}
+                      {new Date(entry.created_at).toLocaleString()}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
         </>
       )}
