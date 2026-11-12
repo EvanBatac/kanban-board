@@ -18,6 +18,7 @@ export default function Board() {
   const [columns, setColumns] = useState([]);
   const [columnName, setColumnName] = useState("");
   const [columnError, setColumnError] = useState("");
+  const [columnToDelete, setColumnToDelete] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const [focusComments, setFocusComments] = useState(false);
@@ -165,6 +166,21 @@ export default function Board() {
       setColumnName("");
     } catch (err) {
       setColumnError(err.response?.data?.message || "Something went wrong");
+    }
+  }
+
+  async function handleDeleteColumn(columnId) {
+    setColumnError("");
+    try {
+      await api.delete(`/boards/${id}/columns/${columnId}`);
+
+      setColumns((prev) => prev.filter((column) => column.id !== columnId));
+      setTasks((prev) => prev.filter((task) => task.column_id !== columnId));
+      setActivityVersion((v) => v + 1);
+      setColumnToDelete(null);
+    } catch (err) {
+      setColumnError(err.response?.data?.message || "Something went wrong");
+      setColumnToDelete(null);
     }
   }
 
@@ -543,6 +559,13 @@ export default function Board() {
                         }
                         onCreateTask={handleCreateTask}
                         onDeleteTask={handleDeleteTask}
+                        onDeleteColumn={(columnId) => {
+                          const column = columns.find(
+                            (item) => item.id === columnId,
+                          );
+                          if (column) setColumnToDelete(column);
+                        }}
+                        canManage={board?.role === "owner" || board?.role === "admin"}
                         onOpenTask={setSelectedTask}
                       />
                     );
@@ -565,6 +588,47 @@ export default function Board() {
             setFocusComments(false);
           }}
         />
+      )}
+      {columnToDelete && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-[#17231f]/45 p-4 backdrop-blur-sm">
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-column-title"
+            aria-describedby="delete-column-description"
+            className="my-auto w-full max-w-md rounded-2xl border border-[#e7ece8] bg-white p-6 shadow-[0_24px_80px_rgba(17,39,26,0.22)] max-[520px]:p-5"
+          >
+            <div className="mb-5 flex items-start gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fff0ee] text-lg text-[#b64036]" aria-hidden="true">
+                !
+              </span>
+              <div>
+                <h2 id="delete-column-title" className="m-0 text-lg font-bold tracking-[-0.4px] text-[#17231f]">
+                  Delete “{columnToDelete.name}”?
+                </h2>
+                <p id="delete-column-description" className="mt-2 mb-0 text-sm leading-6 text-[#68766d]">
+                  This will permanently delete this column and all of its tasks.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-[#edf1ed] pt-4">
+              <button
+                type="button"
+                onClick={() => setColumnToDelete(null)}
+                className="h-10 rounded-lg border border-[#dfe7e1] bg-white px-4 text-sm font-semibold text-[#526158] transition-colors hover:bg-[#f6f8f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteColumn(columnToDelete.id)}
+                className="h-10 rounded-lg border-0 bg-[#b64036] px-4 text-sm font-bold text-white transition-colors hover:bg-[#9e342c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b64036]"
+              >
+                Delete column
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </main>
   );

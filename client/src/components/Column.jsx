@@ -8,6 +8,8 @@ export default function Column({
   onTitleChange,
   onCreateTask,
   onDeleteTask,
+  onDeleteColumn,
+  canManage,
   onOpenTask,
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -22,9 +24,24 @@ export default function Column({
       className={`w-[min(310px,84vw)] shrink-0 rounded-2xl border p-3.5 transition-colors ${isOver ? "border-[#8fbea0] bg-[#edf6ef]" : "border-[#e3eae5] bg-[#eef2ef]"}`}
     >
       <div className="mb-3 flex items-center justify-between gap-3 px-1 pt-0.5">
-        <h2 className="m-0 truncate text-sm font-bold tracking-[-0.2px] text-[#293a30]">
-          {column.name}
-        </h2>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <h2 className="m-0 min-w-0 flex-1 truncate text-sm font-bold tracking-[-0.2px] text-[#293a30]">
+            {column.name}
+          </h2>
+          {canManage && (
+            <button
+              type="button"
+              onClick={() => onDeleteColumn(column.id)}
+              aria-label={`Delete ${column.name} column`}
+              title="Delete column"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent bg-transparent text-[#89958d] transition-colors hover:border-[#f1d4d1] hover:bg-[#fff7f6] hover:text-[#a43d35] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#a43d35]"
+            >
+              <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3.5 5.5h13M8 5.5V3.75h4V5.5m-6.75 0 .65 10.75h8.2l.65-10.75M8.25 8.25v5.25m3.5-5.25v5.25" />
+              </svg>
+            </button>
+          )}
+        </div>
         <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-white px-2 text-[11px] font-bold text-[#77877c]">
           {tasks.length}
         </span>
