@@ -88,3 +88,59 @@ export const getColumns = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteColumn = async (req, res, next) => {
+  try {
+    const columnId = Number(req.params.columnId);
+    const validColumnId = Number.isInteger(columnId) && columnId > 0;
+
+    if (!validColumnId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid column ID",
+      });
+    }
+
+    if (req.board.role !== "owner" && req.board.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to delete this column",
+      });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT id, name FROM board_columns WHERE id = ? AND board_id = ?",
+      [columnId, req.board.id],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Column not found",
+      });
+    }
+
+    await pool.query(
+      "DELETE FROM board_columns WHERE id = ? AND board_id = ?",
+      [columnId, req.board.id],
+    );
+
+    try {
+      await logActivity({
+        userId: req.user.id,
+        boardId: req.board.id,
+        action: "deleted",
+        details: `Deleted column "${rows[0].name}"`,
+      });
+    } catch (error) {
+      console.error("Failed to log column activity:", error);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Column deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
