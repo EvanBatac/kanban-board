@@ -5,6 +5,7 @@ import {
   createBoard,
   getBoards,
   getBoardById,
+  deleteBoard,
 } from "../controllers/boardController.js";
 import {
   getBoardTasks,
@@ -19,12 +20,8 @@ router.post("/", authenticate, createBoard);
 router.get("/", authenticate, getBoards);
 router.get("/:id", authenticate, requireBoardMember, getBoardById);
 router.get("/:id/tasks", authenticate, requireBoardMember, getBoardTasks);
-router.get(
-  "/:id/activity",
-  authenticate,
-  requireBoardMember,
-  getActivity,
-);
+router.delete("/:id", authenticate, requireBoardMember, deleteBoard);
+router.get("/:id/activity", authenticate, requireBoardMember, getActivity);
 router.patch(
   "/:id/tasks/:taskId",
   authenticate,

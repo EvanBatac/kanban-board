@@ -118,3 +118,23 @@ export const getBoardById = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteBoard = async (req, res, next) => {
+  try {
+    if (req.board.role !== "owner") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this board",
+      });
+    }
+
+    await pool.query("DELETE FROM boards WHERE id = ?", [req.board.id]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Board deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
