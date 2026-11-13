@@ -39,7 +39,7 @@ cd kanban-board
 
 ```bash
 mysql -u root -p -e "CREATE DATABASE kanban_board;"
-mysql -u root -p kanban < server/db/schema.sql
+mysql -u root -p kanban_board < server/db/schema.sql
 ```
 
 ### 3. Run the server
